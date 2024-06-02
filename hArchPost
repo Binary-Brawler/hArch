@@ -1,0 +1,274 @@
+#!/usr/bin/env bash
+
+#hArchPost - Post install - Downloadeded after hArch finishes
+# ---------------------------------------------------------------
+# Author    : Chaotic_Guru                                       |
+# Github    : https://github.com/ChaoticHackingNetwork           |
+# Version   : 1.0.0                                              |
+# ---------------------------------------------------------------
+
+
+# Constants
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+WHITE='\033[0;37m'
+YELLOW='\033[0;33m'
+PURPLE='\033[0;35m'
+RESET='\033[0m'
+NEWLINE=$'\n'
+GITHUB='https://raw.githubusercontent.com/ChaoticHackingNetwork/hArch'
+
+# Logging
+log_info() { echo -e "[${GREEN}INFO${RESET}] $1"; }
+log_warning() { echo -e "[WARNING] $1"; }
+log_error() { echo -e "[ERROR] $1"; }
+print_info() { echo -e "[${YELLOW}INFO${RESET}] $1${NEWLINE}"; }
+log_success() { echo -e "[SUCCESS] $1"; }
+
+# User Input
+prompt_for_input() {
+    read -p "$1" response
+    echo "$response"
+}
+
+# Basic Packages
+installer() {
+    print_info "What would you like your system name set too..."
+    hostname=$(prompt_for_input "Enter Hostname: ")
+    echo $hostname > /etc/hostname
+    log_info "Installing some handy packages..."
+    pacman -S dkms linux-headers iwd mlocate cmake ntp neofetch pulseaudio net-tools dnsutils fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --needed --noconfirm >/dev/null
+    hwclock --systohc
+}
+
+# Setup Desktop Env
+desktopEnv() {
+    log_info "Choose a Desktop Environment"
+    log_info "Select number corresponding to DE you want, after installation enter 8 to continue if prompt returns${NEWLINE}"
+    
+    DEs=("Mate" "KDE" "Gnome" "Cinnamon" "Deepin" "Enlightenment" "i3" "Skip")
+    select opt in "${DEs[@]}"
+    do
+        case $opt in
+            "Mate") install_desktop "mate mate-extra lightdm lightdm-gtk-greeter" "lightdm" ;;
+            "KDE") install_desktop "plasma kde-applications sddm" "sddm" ;;
+            "Gnome") install_desktop "gnome gnome-extra lxdm" "lxdm" ;;
+            "Cinnamon") install_desktop "cinnamon gnome-terminal lxdm" "lxdm" ;;
+            "Deepin") install_desktop "deepin deepin-extra sddm" "sddm" ;;
+            "Enlightenment") install_desktop "enlightenment terminology connman bluez bluez-utils sddm" "sddm" ;;
+            "i3") install_desktop "i3-gaps i3blocks i3lock numlockx sddm sddm-kcm" "sddm" ;;
+            "Skip") break ;;
+            *) log_error "Invalid Option, Try Again..." ;;
+        esac
+        print_info "Install as many as you want, the last one installed will be default, enter 8 too continue"
+    done
+}
+
+# Setup Developer Env
+devSetup() {
+    coder=$(prompt_for_input "Can you code? [Y/n]: ")
+    if [[ $coder == 'y' || $coder == 'Y' ]]; then
+        log_info "Setting up a coding env... This may take awhile"
+        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim --needed --noconfirm >/dev/null 2>&1
+        haskellIsTheBest=$(prompt_for_input "Can you code in Haskell? [y/N]: ")
+        if [[ $haskellIsTheBest == 'y' || $haskellIsTheBest == 'Y' ]]; then
+            userHome=$(ls /home)
+            cd /home/$user && mkdir -p ~/AUR && cd ~/AUR && git clone https://aur.archlinux.org/ghcup-hs-bin.git
+            sleep 2
+            log_info "Setting up GHCUP!"
+            cd ghcup-hs-bin && y | makepkg -si >/dev/null 2>&1
+        else
+            log_warning "Ill post a blog posting soon as too why I love Haskell"
+        fi
+    else
+        log_warning "Do you know where the term Script Kiddie comes from?"
+    fi
+}
+
+# DE Wrapper
+install_desktop() {
+    packages="$1"
+    display_manager="$2"
+    log_info "Installing Desktop Env..."
+    pacman -S $packages xorg xorg-server xorg-apps xorg-xinit --needed --noconfirm >/dev/null
+    sleep 5
+    if [[ $packages == *"deepin"* ]]; then
+        sed -i '/^greeter-session=/c\greeter-session=lightdm-deepin-greeter' /etc/lightdm/lightdm.conf
+    fi
+    if [[ $packages == *"enlightenment"* ]]; then
+        systemctl enable connman >/dev/null
+        systemctl enable bluetooth >/dev/null
+    fi
+    #handle_nvidia
+    systemctl enable $display_manager >/dev/null
+}
+
+# Nvidia function to handle nvidia driver installation... WIP
+handle_nvidia() {
+    NVD='NVIDIA'
+    card=$(lspci -vmm | grep VGA -A6)
+    if [[ $card == *"$NVD"* ]]; then
+        log_info "Nvidia graphics detected. Applying configuration..."
+        # Add Nvidia-specific configurations here
+        # This will replace vidDriver() NVD case
+    fi
+}
+
+# Basic Video Driver setup
+vidDriver() {
+    log_info "Gathering Graphics info..."
+    sleep 2
+    str=$(lspci -vmm | grep VGA -A6)
+    AMD='AMD'
+    NVD='NVIDIA'
+    case $str in
+        *"$AMD"*)
+            log_info "Installing AMD Drivers..."
+            pacman -S xf86-video-ati xf86-video-amdgpu mesa --noconfirm --needed >/dev/null
+            ;;
+        *"$NVD"*)
+            log_info "Installing NVIDIA Drivers..."
+            pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm --needed >/dev/null
+            curl -O $GITHUB/main/nvidia.hook
+            curl -O $GITHUB/main/20-nvidia.conf
+            mv nvidia.hook /etc/pacman.d/hooks
+            mv 20-nvidia.conf /etc/X11/xorg.conf.d/
+            bash -c "echo blacklist nouveau > /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
+            # FIXME
+            # Add changes to mkinitcpio.conf - WIP
+            # If issues, try:
+            # xrandr --setprovideroutputsource modesetting NVIDIA-0
+            # xrandr --auto
+            ;;
+        *)
+            log_info "Unable to determine Graphics info.. Installing default drivers"
+            pacman -S xf86-video-fbdev --noconfirm
+    esac
+}
+
+# Setup local/root user accounts
+userInfo() {
+    log_info "Setting Root password..."
+    passwd
+
+    username=$(prompt_for_input "Enter Username: ")
+    log_info "Creating a new user: $username"
+    useradd -mg users -G wheel,power,storage -s /usr/bin/fish $username
+    echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/wheel_group
+    chmod 440 /etc/sudoers.d/wheel_group
+    log_info "Setting password for user: $username"
+    passwd $username
+}
+
+# Bootloader - eventually will be automated
+booter() {
+    log_info "Setting Bootloader..."
+    drives=$(lsblk -f)
+    echo -e "$drives${NEWLINE}"
+    echo -e "[${YELLOW}SYNTAX${RESET}] If BIOS, attach bootloader to disk: ex- /dev/sda"
+    echo -e "[${YELLOW}SYNTAX${RESET}] If UEFI, attach bootloader to partition: ex- /dev/nvme0n1p1"
+    drive=$(prompt_for_input "Enter Drive to install Bootloader [Example: /dev/nvme0n1p1]: ")
+    if [[ -d "/sys/firmware/efi" ]]; then
+        log_info "Installing UEFI Bootloader..."
+        pacman -S efibootmgr grub dosfstools mtools os-prober --noconfirm >/dev/null
+        grub-install --target=x86_64-efi --bootloader-id=HARCH_UEFI --efi-directory=/boot/EFI --recheck
+        grub-mkconfig -o /boot/grub/grub.cfg
+        mkinitcpio -p linux
+    else
+        log_info "Installing BIOS Bootloader..."
+        pacman -S grub --noconfirm >/dev/null
+        grub-install --target=i386-pc $drive --recheck
+        grub-mkconfig -o /boot/grub/grub.cfg
+        mkinitcpio -p linux
+    fi
+}
+
+# Setup blackarch repo for tooling
+blackArch() {
+    log_info "Installing BlackArch Repo and setting everything up..."
+    curl -O https://blackarch.org/strap.sh >/dev/null
+    chmod +x strap.sh
+    ./strap.sh >/dev/null
+    sleep 3
+    log_info "Installing Blackarch Keyring"
+    pacman -Syu --noconfirm >/dev/null
+}
+
+# Setup VIM 
+vimSetup() {
+    vim=$(prompt_for_input "Do you want to add Bundle to VIM? [y/n]: ")
+    if [[ $vim == 'y' || $vim == 'Y' ]]; then
+        log_info "Adding Bundle to VIM..."
+        users=$(ls /home)
+        curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null
+        mv vimrc_bundle_conf /home/$users/.vimrc
+    else
+        log_warning "Skipping..."
+    fi
+}
+
+# Install 3gb worth of tools
+hackTools() {
+    ht=$(prompt_for_input 'Do you want to add the Master Hacking Toolset? [y/N]: ')
+    if [[ $ht == 'y' || $ht == 'Y' ]]; then
+        log_info "Installing Master Hacking Toolset..."
+        curl -O $GITHUB/main/Tools/Master >/dev/null
+        pacman -S - < /Master --noconfirm
+    else
+        log_warning "Skipping..."
+        curl -O $GITHUB/main/Tools/Master >/dev/null
+    fi
+}
+
+complete() {
+    log_success "hArch has been successfully installed on your system"
+    neofetch
+    log_info "Hack the Universe $username"
+    log_info "A reboot should now take place"
+    log_info "Run the following commands to reboot properly:"
+    log_info "1: exit"
+    log_info "2: umount -a"
+    log_info "3: reboot"
+    exit
+}
+
+sleep_and_clear() {
+    sleep 3
+    clear
+}
+
+# Find a cleaner method than this oneFuncToRuleThemAll
+oneFuncToRuleThemAll() {
+    installer
+    sleep_and_clear
+
+    userInfo
+    sleep_and_clear
+
+    vidDriver
+    sleep_and_clear
+
+    booter
+    sleep_and_clear
+
+    blackArch
+    sleep_and_clear
+
+    hackTools
+    sleep_and_clear
+
+    vimSetup
+    sleep_and_clear
+
+    desktopEnv
+    sleep_and_clear
+
+    devSetup
+    sleep_and_clear
+
+    complete
+}
+
+
+
+oneFuncToRuleThemAll

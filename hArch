@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+
+# hArch UEFI/BIOS Installer (Hackers Arch)
+# ---------------------------------------------------------------
+# Author    : Chaotic_Guru                                       |
+# Github    : https://github.com/ChaoticHackingNetwork           |
+# Version   : 1.0.0                     	 					 | 
+# ---------------------------------------------------------------
+
+
+# Constants
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+WHITE='\033[0;37m'
+YELLOW='\033[0;33m'
+PURPLE='\033[0;35m'
+RESET='\033[0m'
+NEWLINE=$'\n'
+
+
+# Logging
+log_info() { echo -e "[${GREEN}INFO${RESET}] $1"; }
+log_warning() { echo -e "[WARNING] $1"; }
+log_error() { echo -e "[ERROR] $1"; }
+print_info() { echo -e "[${YELLOW}INFO${RESET}] $1${NEWLINE}"; }
+log_success() { echo -e "[SUCCESS] $1"; }
+
+# User Input
+prompt_for_input() {
+    read -p "$1" response
+    echo "$response"
+}
+
+# Simple greeter function
+greet() {
+	echo -e "${PURPLE}Chaotic_Guru's hArch Installer${RESET}"
+	echo ${NEWLINE}
+	echo -e "${YELLOW}-> Simple${RESET}"
+	echo -e "${GREEN}--> Quick${RESET}"
+	echo -e "${WHITE}---> Efficient${RESET}"
+	echo ${NEWLINE}
+	echo -e ${YELLOW}
+	echo ${NEWLINE}
+	echo ${NEWLINE}
+	echo " ██░ ██  ▄▄▄       ██▀███   ▄████▄   ██░ ██     ██▓     ██▓ ███▄    █  █    ██ ▒██   ██▒"
+	echo "▓██░ ██▒▒████▄    ▓██ ▒ ██▒▒██▀ ▀█  ▓██░ ██▒   ▓██▒    ▓██▒ ██ ▀█   █  ██  ▓██▒▒▒ █ █ ▒░"
+	echo "▒██▀▀██░▒██  ▀█▄  ▓██ ░▄█ ▒▒▓█    ▄ ▒██▀▀██░   ▒██░    ▒██▒▓██  ▀█ ██▒▓██  ▒██░░░  █   ░"
+	echo "░▓█ ░██ ░██▄▄▄▄██ ▒██▀▀█▄  ▒▓▓▄ ▄██▒░▓█ ░██    ▒██░    ░██░▓██▒  ▐▌██▒▓▓█  ░██░ ░ █ █ ▒ "
+	echo "░▓█▒░██▓ ▓█   ▓██▒░██▓ ▒██▒▒ ▓███▀ ░░▓█▒░██▓   ░██████▒░██░▒██░   ▓██░▒▒█████▓ ▒██▒ ▒██▒"
+	echo " ▒ ░░▒░▒ ▒▒   ▓▒█░░ ▒▓ ░▒▓░░ ░▒ ▒  ░ ▒ ░░▒░▒   ░ ▒░▓  ░░▓  ░ ▒░   ▒ ▒ ░▒▓▒ ▒ ▒ ▒▒ ░ ░▓ ░"
+	echo " ▒ ░▒░ ░  ▒   ▒▒ ░  ░▒ ░ ▒░  ░  ▒    ▒ ░▒░ ░   ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░░░▒░ ░ ░ ░░   ░▒ ░"
+	echo " ░  ░░ ░  ░   ▒     ░░   ░ ░         ░  ░░ ░     ░ ░    ▒ ░   ░   ░ ░  ░░░ ░ ░  ░    ░  "
+	echo " ░  ░  ░      ░  ░   ░     ░ ░       ░  ░  ░       ░  ░ ░           ░    ░      ░    ░  "
+	echo "                           ░                                                            "
+	echo -e "${RESET}"
+	echo ${NEWLINE}
+	echo ${NEWLINE}
+}
+
+# Check Internet Connection
+checkNet() {
+    print_info "Checking Internet Connection..."
+    
+    # Check if speedtest-cli is installed
+    if ! command -v speedtest-cli &>/dev/null; then
+        print_info "speedtest-cli is not installed. Installing..."
+        pacman -Sy >/dev/null
+        python3 -m venv speedTest && cd speedTest/bin/ && ./pip3 install speedtest-cli >/dev/null
+    fi
+    
+    # Perform speed test
+    log_info "Calculating Internet Speed..."
+    sleep 1
+    local speed=$(./speedtest-cli --simple | awk '/^Download:/ {print $2}')
+    sleep 1
+    print_info "Download Speed: $speed Mbps"
+    
+    # Check if download speed is greater than 50 Mbps
+    if (( $(echo "$speed > 50" | bc -l) )); then
+        print_info "Enabling Parallel Downloads..."
+        sed -i '/#ParallelDownloads/s/^#//g' /etc/pacman.conf
+    else
+        print_info "Keeping Parallel Downloads Disabled as speed is too slow."
+    fi
+}
+
+
+# Calculate Swap Size Based on System RAM
+# Improve this...
+calculate_swap_size() {
+    local ram_gb=$(free -g | awk '/^Mem:/{print $2}')
+    local swap_size="2G" # Default
+
+    if [[ ! $ram_gb =~ ^[0-9]+$ ]]; then
+        echo "Error: Could not determine RAM size." >&2
+        exit 1
+    fi
+
+    if ((ram_gb < 2)); then
+        echo "Error: Insufficient RAM (< 2GB)." >&2
+        exit 1
+    elif ((ram_gb < 4)); then
+        swap_size="${ram_gb}G"
+    elif ((ram_gb < 16)); then
+        swap_size="4G"
+    else
+        swap_size="8G"
+    fi
+
+    echo "$swap_size"
+}
+
+
+# Partitioning Function
+partition_drive() {
+    local drive="$1"
+    local swap_size=$(calculate_swap_size)
+    local cmd_list=()
+
+    if [[ -d "/sys/firmware/efi/efivars/" ]]; then
+        # Commands for UEFI
+        cmd_list=(
+            "g"                          # Create a new GPT table
+            "n" "" "" "+512M"            # EFI partition
+            "n" "" "" "+$swap_size"      # Swap partition
+            "n" "" "" ""                 # Root partition
+            "t" "1" "1"                  # Set type of EFI partition to EFI System
+            "t" "2" "19"                 # Set type of swap to Linux swap
+            "w"                          # Write changes
+        )
+
+    else
+        # Commands for BIOS
+        cmd_list=(
+            "o" "n" "p" "" "" "+$swap_size"   # Swap partition
+            "n" "p" "" "" ""                  # Root partition
+            "t" "1" "82"                      # Set type of first partition to Linux swap
+            "w"                               # Write changes
+        )
+
+    fi
+
+    # Execute commands through fdisk
+    printf "%s\n" "${cmd_list[@]}" | fdisk "$drive" >/dev/null
+
+    # Format partitions and mount them
+    if [[ -d "/sys/firmware/efi/efivars/" ]]; then
+        mkfs.fat -F32 "${drive}1" # Format EFI partition
+        mkswap "${drive}2"         # Format swap partition
+        mkfs.ext4 "${drive}3"      # Format root partition
+
+        # Mount partitions
+        mount "${drive}3" /mnt
+        mkdir -p /mnt/boot/EFI
+        mount "${drive}1" /mnt/boot/EFI
+        swapon "${drive}2"
+    else
+        mkswap "${drive}1"         # Format swap partition
+        mkfs.ext4 "${drive}2"      # Format root partition
+
+        # Mount partitions
+        mount "${drive}2" /mnt
+        swapon "${drive}1"
+    fi
+}
+
+# Installer Function
+installer() {
+    print_info "Installing Arch base..."
+    sleep 2
+    pacstrap /mnt base base-devel linux linux-firmware vi vim nano dhcpcd >/dev/null
+    sleep 2
+    #Generate fstab
+    genfstab -U /mnt >> /mnt/etc/fstab
+}
+
+# Last Minute Setup Function
+lastMinSetup() {
+    print_info "Finishing last minute setup..."
+    echo 0 > /proc/sys/kernel/hung_task_timeout_secs
+    curl -O 'https://raw.githubusercontent.com/ChaoticHackingNetwork/Harch/main/hArchPost' >/dev/null
+    chmod +x hArchPost
+    mv hArchPost /mnt
+    print_info "Time to enter CHROOT"
+    print_info "The final script has been installed and moved to your new root directory"
+    print_info "Run these commands to finish setup"
+    echo ${NEWLINE}
+    echo ${NEWLINE}
+    echo -e "${GREEN}[1] arch-chroot /mnt"
+    echo -e "[2] ./hArchPost${RESET}"
+    echo ${NEWLINE}
+}
+
+# Main Installation Flow
+main() {
+    greet
+    sleep 1
+    checkNet
+    sleep 1
+    print_info "Gathering drives..."
+    lsblk
+    print_info "Time to select the drive you want too partition..."
+    print_info "If you want to manually partition you may, just type exit after mounting /mnt"
+    print_info "Otherwise, automated partition will create the standard BIOS/UEFI partitions"
+    echo ${NEWLINE}
+    local drive=$(prompt_for_input "Enter Drive to prepare (e.g., /dev/sda): ")
+    local manual=$(prompt_for_input "Do you want to manually partition [y/n]: ")
+
+    if [[ $manual == 'y' || $manual == 'Y' ]]; then
+        cfdisk "$drive"
+        print_info "Entering BASH shell. Make your filesystem and mount /mnt. Type exit once finished."
+        print_info "System is $is_uefi_system"
+        bash
+    else
+        print_info "Modifying $drive... HANG TIGHT!!!"
+        sleep 3
+
+        partition_drive "$drive"
+    fi
+
+    installer || log_error "Base system installation failed. Exiting."
+    
+    lastMinSetup || log_warning "Last minute setup encountered issues."
+
+    log_success "hArch Installation completed successfully!"
+
+}
+
+# Start the script
+main

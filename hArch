@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-# hArch UEFI/BIOS Installer (Hackers Arch)
 # ---------------------------------------------------------------
-# Author    : Chaotic_Guru                                       |
+# hArch Installer (Hackers Arch)                                 |
+# ---------------------------------------------------------------
+# Author    : Binary-Brawler                                     |
 # Github    : https://github.com/ChaoticHackingNetwork           |
-# Version   : 1.0.0                     	 					 | 
+# Version   : 1.0.1                     	 					 | 
 # ---------------------------------------------------------------
 
 
@@ -19,25 +20,20 @@ NEWLINE=$'\n'
 
 
 # Logging
-log_info() { echo -e "[${GREEN}INFO${RESET}] $1"; }
-log_warning() { echo -e "[WARNING] $1"; }
-log_error() { echo -e "[ERROR] $1"; }
-print_info() { echo -e "[${YELLOW}INFO${RESET}] $1${NEWLINE}"; }
+log_warning() { echo -e "[${YELLOW}WARNING${RESET}] $1"; }
+log_error() { echo -e "[${RED}ERROR${RESET}] $1"; }
+print_info() { echo -e "[${GREEN}INFO${RESET}] $1${NEWLINE}"; }
 log_success() { echo -e "[SUCCESS] $1"; }
 
 # User Input
 prompt_for_input() {
     read -p "$1" response
-    echo "$response"
 }
 
 # Simple greeter function
 greet() {
-	echo -e "${PURPLE}Chaotic_Guru's hArch Installer${RESET}"
+	echo -e "${PURPLE}Binary-Brawler's hArch Installer${RESET}"
 	echo ${NEWLINE}
-	echo -e "${YELLOW}-> Simple${RESET}"
-	echo -e "${GREEN}--> Quick${RESET}"
-	echo -e "${WHITE}---> Efficient${RESET}"
 	echo ${NEWLINE}
 	echo -e ${YELLOW}
 	echo ${NEWLINE}
@@ -69,7 +65,7 @@ checkNet() {
     fi
     
     # Perform speed test
-    log_info "Calculating Internet Speed..."
+    print_info "Calculating Internet Speed..."
     sleep 1
     local speed=$(./speedtest-cli --simple | awk '/^Download:/ {print $2}')
     sleep 1
@@ -89,15 +85,15 @@ checkNet() {
 # Improve this...
 calculate_swap_size() {
     local ram_gb=$(free -g | awk '/^Mem:/{print $2}')
-    local swap_size="2G" # Default
+    local swap_size="4G" # Default
 
     if [[ ! $ram_gb =~ ^[0-9]+$ ]]; then
-        echo "Error: Could not determine RAM size." >&2
+        log_error "Error: Could not determine RAM size." >&2
         exit 1
     fi
 
     if ((ram_gb < 2)); then
-        echo "Error: Insufficient RAM (< 2GB)." >&2
+        log_error "Error: Insufficient RAM (< 2GB)." >&2
         exit 1
     elif ((ram_gb < 4)); then
         swap_size="${ram_gb}G"
@@ -118,7 +114,6 @@ partition_drive() {
     local cmd_list=()
 
     if [[ -d "/sys/firmware/efi/efivars/" ]]; then
-        # Commands for UEFI
         cmd_list=(
             "g"                          # Create a new GPT table
             "n" "" "" "+512M"            # EFI partition
@@ -130,7 +125,6 @@ partition_drive() {
         )
 
     else
-        # Commands for BIOS
         cmd_list=(
             "o" "n" "p" "" "" "+$swap_size"   # Swap partition
             "n" "p" "" "" ""                  # Root partition
@@ -140,27 +134,48 @@ partition_drive() {
 
     fi
 
-    # Execute commands through fdisk
     printf "%s\n" "${cmd_list[@]}" | fdisk "$drive" >/dev/null
 
     # Format partitions and mount them
     if [[ -d "/sys/firmware/efi/efivars/" ]]; then
-        mkfs.fat -F32 "${drive}1" # Format EFI partition
-        mkswap "${drive}2"         # Format swap partition
-        mkfs.ext4 "${drive}3"      # Format root partition
+        if [[ $drive == *nvme* ]]; then
+            mkfs.fat -F32 "${drive}p1" # Format EFI partition
+            mkswap "${drive}p2"         # Format swap partition
+            mkfs.ext4 "${drive}p3"      # Format root partition
 
-        # Mount partitions
-        mount "${drive}3" /mnt
-        mkdir -p /mnt/boot/EFI
-        mount "${drive}1" /mnt/boot/EFI
-        swapon "${drive}2"
+            # Mount partitions
+            mount "${drive}p3" /mnt
+            mkdir -p /mnt/boot/EFI
+            mount "${drive}p1" /mnt/boot/EFI
+            swapon "${drive}p2"
+        elif [[ $drive == sd* ]]; then
+            mkfs.fat -F32 "${drive}1" # Format EFI partition
+            mkswap "${drive}2"         # Format swap partition
+            mkfs.ext4 "${drive}3"      # Format root partition
+
+            # Mount partitions
+            mount "${drive}3" /mnt
+            mkdir -p /mnt/boot/EFI
+            mount "${drive}1" /mnt/boot/EFI
+            swapon "${drive}2"
+        else
+            log_error "Something went wrong with UEFI install..."
+        fi
     else
-        mkswap "${drive}1"         # Format swap partition
-        mkfs.ext4 "${drive}2"      # Format root partition
+        if [[ $drive == sd* ]]; then
+            mkfs.fat -F32 "${drive}1" # Format EFI partition
+            mkswap "${drive}2"         # Format swap partition
+            mkfs.ext4 "${drive}3"      # Format root partition
 
-        # Mount partitions
-        mount "${drive}2" /mnt
-        swapon "${drive}1"
+            # Mount partitions
+            mount "${drive}3" /mnt
+            mkdir -p /mnt/boot/EFI
+            mount "${drive}1" /mnt/boot/EFI
+            swapon "${drive}2"
+        else
+            log_error "Something happened with BIOS install..."
+        
+        fi
     fi
 }
 
@@ -178,7 +193,7 @@ installer() {
 lastMinSetup() {
     print_info "Finishing last minute setup..."
     echo 0 > /proc/sys/kernel/hung_task_timeout_secs
-    curl -O 'https://raw.githubusercontent.com/ChaoticHackingNetwork/Harch/main/hArchPost' >/dev/null
+    curl -sS -o /dev/null 'https://raw.githubusercontent.com/ChaoticHackingNetwork/Harch/main/hArchPost'
     chmod +x hArchPost
     mv hArchPost /mnt
     print_info "Time to enter CHROOT"
@@ -198,7 +213,7 @@ main() {
     checkNet
     sleep 1
     print_info "Gathering drives..."
-    lsblk
+    lsblk #TODO: Add something more robust
     print_info "Time to select the drive you want too partition..."
     print_info "If you want to manually partition you may, just type exit after mounting /mnt"
     print_info "Otherwise, automated partition will create the standard BIOS/UEFI partitions"

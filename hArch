@@ -113,6 +113,9 @@ partition_drive() {
     local swap_size=$(calculate_swap_size)
     local cmd_list=()
 
+    # Debugging: Print out the drive being used
+    echo "Partitioning drive: $drive"
+
     if [[ -d "/sys/firmware/efi/efivars/" ]]; then
         cmd_list=(
             "g"                          # Create a new GPT table
@@ -134,7 +137,18 @@ partition_drive() {
 
     fi
 
+    # Debugging: Print out the commands being run
+    echo "Executing fdisk commands:"
+    printf "%s\n" "${cmd_list[@]}"
+
+    # Run fdisk commands
     printf "%s\n" "${cmd_list[@]}" | fdisk "$drive" >/dev/null
+
+    # Check for fdisk errors
+    if [[ $? -ne 0 ]]; then
+        echo "Error: Failed to partition the drive."
+        return 1
+    fi
 
     # Format partitions and mount them
     if [[ -d "/sys/firmware/efi/efivars/" ]]; then
@@ -159,7 +173,8 @@ partition_drive() {
             mount "${drive}1" /mnt/boot/EFI
             swapon "${drive}2"
         else
-            log_error "Something went wrong with UEFI install..."
+            echo "Error: Something went wrong with UEFI install..."
+            return 1
         fi
     else
         if [[ $drive == sd* ]]; then
@@ -173,8 +188,8 @@ partition_drive() {
             mount "${drive}1" /mnt/boot/EFI
             swapon "${drive}2"
         else
-            log_error "Something happened with BIOS install..."
-        
+            echo "Error: Something happened with BIOS install..."
+            return 1
         fi
     fi
 }

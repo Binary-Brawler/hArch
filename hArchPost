@@ -28,6 +28,7 @@ log_success() { echo -e "[SUCCESS] $1"; }
 # User Input
 prompt_for_input() {
     read -p "$1" response
+    echo "response"
 }
 
 # Basic Packages
@@ -35,8 +36,8 @@ installer() {
     print_info "What would you like your system name set too..."
     hostname=$(prompt_for_input "Enter Hostname: ")
     echo $hostname > /etc/hostname
-    print_info "Installing some handy packages..."
-    pacman -S dkms linux-headers iwd mlocate cmake ntp neofetch pulseaudio net-tools dnsutils fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --needed --noconfirm >/dev/null
+    print_info "Installing some handy packages..." 
+    pacman -S dkms linux-headers iwd mlocate cmake ntp neofetch pulseaudio net-tools dnsutils fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null
     hwclock --systohc
 }
 
@@ -185,7 +186,7 @@ booter() {
 # Setup blackarch repo for tooling
 blackArch() {
     print_info "Installing BlackArch Repo and setting everything up..."
-    curl -sS -o /dev/null https://blackarch.org/strap.sh >/dev/null
+    curl -O 'https://blackarch.org/strap.sh' >/dev/null
     chmod +x strap.sh
     ./strap.sh >/dev/null
     sleep 3
@@ -211,11 +212,11 @@ hackTools() {
     ht=$(prompt_for_input 'Do you want to add the Master Hacking Toolset? [y/N]: ')
     if [[ $ht == 'y' || $ht == 'Y' ]]; then
         print_info "Installing Master Hacking Toolset..."
-        curl -sS -o /dev/null $GITHUB/main/Tools/Master >/dev/null
+        curl -O $GITHUB/main/Tools/Master >/dev/null
         pacman -S - < /Master --noconfirm
     else
         log_warning "Skipping..."
-        curl -sS -o /dev/null  $GITHUB/main/Tools/Master >/dev/null
+        curl -O $GITHUB/main/Tools/Master >/dev/null
     fi
 }
 

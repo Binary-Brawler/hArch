@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------
 # Author    : Binary-Brawler                                     |
 # Github    : https://github.com/Binary-Brawler                  |
-# Version   : 1.0.1                     	 					 | 
+# Version   : 1.0.2                     	 					 | 
 # ---------------------------------------------------------------
 
 
@@ -37,6 +37,7 @@ greet() {
 	echo -e "${PURPLE}Binary-Brawler's hArch Installer${RESET}"
 	echo ${NEWLINE}
 	echo ${NEWLINE}
+    print_info "-------------------------------------------------------------------------------------------------"
 	echo -e ${YELLOW}
 	echo ${NEWLINE}
 	echo ${NEWLINE}
@@ -53,10 +54,12 @@ greet() {
 	echo -e "${RESET}"
 	echo ${NEWLINE}
 	echo ${NEWLINE}
+    print_info "-------------------------------------------------------------------------------------------------"
 }
 
 # Check Internet Connection
 checkNet() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Checking Internet Connection..."
     
     # Check if speedtest-cli is installed
@@ -71,14 +74,17 @@ checkNet() {
     sleep 1
     local speed=$(./speedtest-cli --simple | awk '/^Download:/ {print $2}')
     sleep 1
+    print_info "-----------------------------"
     print_info "Download Speed: $speed Mbps"
     
     # Check if download speed is greater than 50 Mbps
     if (( $(echo "$speed > 50" | bc -l) )); then
         print_info "Enabling Parallel Downloads..."
         sed -i '/#ParallelDownloads/s/^#//g' /etc/pacman.conf
+        echo "true" > enable_parallel.txt
     else
         print_info "Keeping Parallel Downloads Disabled as speed is too slow."
+        echo "false" > enable_parallel.txt
     fi
 }
 
@@ -137,7 +143,7 @@ partition_drive() {
     fi
 
     # Run fdisk commands
-    printf "%s\n" "${cmd_list[@]}" | fdisk "$drive" >/dev/null
+    printf "%s\n" "${cmd_list[@]}" | fdisk "$drive" >/dev/null 2>&1
 
     # Check for fdisk errors
     if [[ $? -ne 0 ]]; then
@@ -185,15 +191,16 @@ partition_drive() {
         else
             echo "Error: Something happened with BIOS install..."
             return 1
-        fi
+        fi 
     fi
 }
 
 # Installer Function
 installer() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Installing Arch base..."
     sleep 2
-    pacstrap /mnt base base-devel linux linux-firmware vi vim nano dhcpcd iwd >/dev/null
+    pacstrap /mnt base base-devel linux linux-firmware vi vim nano dhcpcd iwd >/dev/null 2>&1
     sleep 2
     #Generate fstab
     genfstab -U /mnt >> /mnt/etc/fstab
@@ -201,18 +208,22 @@ installer() {
 
 # Last Minute Setup Function
 lastMinSetup() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Finishing last minute setup..."
     echo 0 > /proc/sys/kernel/hung_task_timeout_secs
-    curl -O $GITHUB/main/hArchPost >/dev/null
+    mv enable_parallel.txt /mnt
+    curl -O $GITHUB/main/hArchPost >/dev/null 2>&1
     chmod +x hArchPost
     mv hArchPost /mnt
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Time to enter CHROOT"
     print_info "The final script has been installed and moved to your new root directory"
     print_info "Run these commands to finish setup"
+    print_info "-------------------------------------------------------------------------------------------------"
     echo ${NEWLINE}
     echo ${NEWLINE}
-    echo -e "${GREEN}[1] arch-chroot /mnt"
-    echo -e "[2] ./hArchPost${RESET}"
+    echo -e "[1]${GREEN} arch-chroot /mnt${RESET}"
+    echo -e "[2]${GREEN} ./hArchPost${RESET}"
     echo ${NEWLINE}
 }
 

@@ -67,3 +67,9 @@ jad
 javasnoop
 valgrind
 yara
+rustscan
+cloudfail
+kamerka
+ssrfmap
+yersinia
+legion

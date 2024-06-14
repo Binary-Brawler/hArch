@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------
 # Author    : Binary-Brawler                                     |
 # Github    : https://github.com/Binary-Brawler                  |
-# Version   : 1.0.1                                              |
+# Version   : 1.0.2                                              |
 # ---------------------------------------------------------------
 
 
@@ -25,52 +25,70 @@ log_error() { echo -e "[${RED}ERROR${RESET}] $1"; }
 print_info() { echo -e "[${GREEN}INFO${RESET}] $1${NEWLINE}"; }
 log_success() { echo -e "[SUCCESS] $1"; }
 
-# User Input
-prompt_for_input() {
-    read -p "$1" response
-    echo "response"
-}
-
+# Repeats turned into functions ;) 
 sleep_and_clear() {
     sleep 3
     clear
 }
 
+# Are we enabling parallel downloads again...
+function pDownload() {
+    print_info "-------------------------------------------------------------------------------------------------"
+    # Inside your arch-chroot script
+    enable_parallel=$(cat /enable_parallel.txt)
+
+    if [ "$enable_parallel" = "true" ]; then
+        # Enable parallel downloads
+        sed -i '/#ParallelDownloads/s/^#//g' /etc/pacman.conf
+        print_info "Parallel Downloads Enabled."
+    else
+        print_info "Parallel Downloads Disabled."
+    fi
+}
+
 # Basic Packages
 installer() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "What would you like your system name set too..."
-    hostname=$(prompt_for_input "Enter Hostname: ")
+    read -p "Enter Hostname: " hostname
     echo $hostname > /etc/hostname
     print_info "Installing some handy packages..." 
-    pacman -S dkms linux-headers iwd mlocate cmake ntp neofetch pulseaudio net-tools dnsutils fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null
+    print_info "-------------------------------------------------------------------------------------------------"
+    pacman -S dkms linux-headers mlocate cmake neofetch firefox flameshot net-tools dnsutils dconf dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null 2>&1
     hwclock --systohc
 }
 
 # Setup Desktop Env
 desktopEnv() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Setting up DE..."
-    pacman -S  mate mate-extra lightdm lightdm-gtk-greeter dconf dconf-editor xorg xorg-server xorg-apps xorg-xinit --noconfirm >/dev/null
-    systemctl enable lightdm >/dev/null
+    pacman -S  mate mate-extra lightdm lightdm-gtk-greeter xorg xorg-server xorg-apps xorg-xinit --noconfirm >/dev/null 2>&1
+    systemctl enable lightdm >/dev/null 2>&1
     sleep 3
-    curl -O https://raw.githubusercontent.com/Binary-Brawler/hArch/main/linux-vs-windows.jpg
+    curl -O $GITHUB/main/linux-vs-windows.jpg >/dev/null 2>&1
     mv /linux-vs-windows.jpg /usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg
-    curl -O https://raw.githubusercontent.com/Binary-Brawler/hArch/main/MateConfig
-    dconf load /org/mate/ < /MateConfig
+    curl -O $GITHUB/main/MateConfig >/dev/null 2>&1
+    sleep 2
+    dconf load /org/mate/ < MateConfig.txt
 }
 
 # Setup Developer Env
 devSetup() {
-    coder=$(prompt_for_input "Can you code? [Y/n]: ")
+    print_info "-------------------------------------------------------------------------------------------------"
+    read -p "Can you code? [Y/n]: " coder
     if [[ $coder == 'y' || $coder == 'Y' ]]; then
         print_info "Setting up a coding env... This may take awhile"
-        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1
-        haskellIsTheBest=$(prompt_for_input "Can you code in Haskell? [y/N]: ")
+        print_info "-------------------------------------------------------------------------------------------------"
+        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1 
+        read -p "Can you code in Haskell? [y/N]: " haskellIsTheBest
         if [[ $haskellIsTheBest == 'y' || $haskellIsTheBest == 'Y' ]]; then
             userHome=$(ls /home)
             cd /home/$user && mkdir -p ~/AUR && cd ~/AUR && git clone https://aur.archlinux.org/ghcup-hs-bin.git
             sleep 2
             print_info "Setting up GHCUP!"
-            cd ghcup-hs-bin && echo 'y' | makepkg -si >/dev/null 2>&1
+            print_info "-------------------------------------------------------------------------------------------------"
+            cd ghcup-hs-bin && yes 'y' | makepkg -si >/dev/null 2>&1
+
         else
             log_warning "Give it a whirl..."
         fi
@@ -81,6 +99,7 @@ devSetup() {
 }
 
 # Nvidia function to handle nvidia driver installation... WIP
+# vidDriver will handle for now...
 handle_nvidia() {
     NVD='NVIDIA'
     card=$(lspci -vmm | grep VGA -A6)
@@ -93,6 +112,7 @@ handle_nvidia() {
 
 # Basic Video Driver setup
 vidDriver() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Gathering Graphics info..."
     sleep 2
     str=$(lspci -vmm | grep VGA -A6)
@@ -101,13 +121,15 @@ vidDriver() {
     case $str in
         *"$AMD"*)
             print_info "Installing AMD Drivers..."
+            print_info "-------------------------------------------------------------------------------------------------"
             pacman -S xf86-video-ati xf86-video-amdgpu mesa --noconfirm --needed >/dev/null
             ;;
         *"$NVD"*)
             print_info "Installing NVIDIA Drivers..."
+            print_info "-------------------------------------------------------------------------------------------------"
             pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm --needed >/dev/null
-            curl -sS -o /dev/null $GITHUB/main/nvidia.hook
-            curl -sS -o /dev/null $GITHUB/main/20-nvidia.conf
+            curl -O $GITHUB/main/nvidia.hook >/dev/null
+            curl -O $GITHUB/main/20-nvidia.conf >/dev/null
             mv nvidia.hook /etc/pacman.d/hooks
             mv 20-nvidia.conf /etc/X11/xorg.conf.d/
             bash -c "echo blacklist nouveau > /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
@@ -119,16 +141,18 @@ vidDriver() {
             ;;
         *)
             print_info "Unable to determine Graphics info.. Installing default drivers"
+            print_info "-------------------------------------------------------------------------------------------------"
             pacman -S xf86-video-fbdev --noconfirm
     esac
 }
 
 # Setup local/root user accounts
 userInfo() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Setting Root password..."
     passwd
-
-    username=$(prompt_for_input "Enter Username: ")
+    print_info "-------------------------------------------------------------------------------------------------"
+    read -p "Enter Username: " username
     print_info "Creating a new user: $username"
     useradd -mg users -G wheel,power,storage -s /usr/bin/fish $username
     echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/wheel_group
@@ -139,12 +163,14 @@ userInfo() {
 
 # Bootloader - eventually will be automated
 booter() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Setting Bootloader..."
     drives=$(lsblk -f)
     echo -e "$drives${NEWLINE}"
     echo -e "[${YELLOW}SYNTAX${RESET}] If BIOS, attach bootloader to disk: ex- /dev/sda"
     echo -e "[${YELLOW}SYNTAX${RESET}] If UEFI, attach bootloader to partition: ex- /dev/nvme0n1p1"
-    drive=$(prompt_for_input "Enter Drive to install Bootloader [Example: /dev/nvme0n1p1]: ")
+    print_info "-------------------------------------------------------------------------------------------------"
+    read -p "Enter Drive to install Bootloader [Example: /dev/nvme0n1p1]: " drive
     if [[ -d "/sys/firmware/efi" ]]; then
         print_info "Installing UEFI Bootloader..."
         pacman -S efibootmgr grub dosfstools mtools os-prober --noconfirm >/dev/null
@@ -162,22 +188,24 @@ booter() {
 
 # Setup blackarch repo for tooling
 blackArch() {
+    print_info "-------------------------------------------------------------------------------------------------"
     print_info "Installing BlackArch Repo and setting everything up..."
-    curl -O 'https://blackarch.org/strap.sh' >/dev/null
+    curl -O 'https://blackarch.org/strap.sh' >/dev/null 2>&1
     chmod +x strap.sh
     ./strap.sh >/dev/null
     sleep 3
     print_info "Installing Blackarch Keyring"
-    pacman -Syu --noconfirm >/dev/null
+    pacman -Syu --noconfirm >/dev/null 2>&1
 }
 
 # Setup VIM 
 vimSetup() {
-    vim=$(prompt_for_input "Do you want to add Bundle to VIM? [y/n]: ")
+    print_info "-------------------------------------------------------------------------------------------------"
+    read -p "Do you want to add Bundle to VIM? [y/n]: " vim
     if [[ $vim == 'y' || $vim == 'Y' ]]; then
         print_info "Adding Bundle to VIM..."
         users=$(ls /home)
-        curl -sS -o /dev/null $GITHUB/main/vimrc_bundle_conf >/dev/null
+        curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null
         mv vimrc_bundle_conf /home/$users/.vimrc
     else
         log_warning "Skipping..."
@@ -186,7 +214,8 @@ vimSetup() {
 
 # Install 3gb worth of tools
 hackTools() {
-    ht=$(prompt_for_input 'Do you want to add the Master Hacking Toolset? [y/N]: ')
+    print_info "-------------------------------------------------------------------------------------------------"
+    read -p 'Do you want to add the Master Hacking Toolset? [y/N]: ' ht
     if [[ $ht == 'y' || $ht == 'Y' ]]; then
         print_info "Installing Master Hacking Toolset... Go grab a drink!"
         curl -O $GITHUB/main/Tools/Master >/dev/null
@@ -197,6 +226,7 @@ hackTools() {
 }
 
 complete() {
+    sleep_and_clear
     print_info "-------------------------------------------------------------------------------------------------"
     neofetch
     print_info "-------------------------------------------------------------------------------------------------"
@@ -212,6 +242,9 @@ complete() {
 
 # oneFuncToRuleThemAll
 oneFuncToRuleThemAll() {
+    pDownload
+    sleep_and_clear
+
     installer
     sleep_and_clear
 

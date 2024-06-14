@@ -38,7 +38,7 @@ ________________________________________________________________________________
 
 To install, boot into Arch live ISO and:
   
-    1. curl -O https://raw.githubusercontent.com/ChaoticHackingNetwork/hArch/main/hArch
+    1. curl -O https://raw.githubusercontent.com/Binary-Brawler/hArch/main/hArch
     2. chmod +x hArch
     3. ./hArch
     * Some systems show a bad meterpreter if so run: sed -i -e 's/\r$//' hArch 

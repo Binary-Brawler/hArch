@@ -4,7 +4,7 @@
 # hArch Installer (Hackers Arch)                                 |
 # ---------------------------------------------------------------
 # Author    : Binary-Brawler                                     |
-# Github    : https://github.com/ChaoticHackingNetwork           |
+# Github    : https://github.com/Binary-Brawler                  |
 # Version   : 1.0.1                     	 					 | 
 # ---------------------------------------------------------------
 
@@ -17,6 +17,7 @@ YELLOW='\033[0;33m'
 PURPLE='\033[0;35m'
 RESET='\033[0m'
 NEWLINE=$'\n'
+GITHUB='https://raw.githubusercontent.com/Binary-Brawler/hArch'
 
 
 # Logging
@@ -202,7 +203,7 @@ installer() {
 lastMinSetup() {
     print_info "Finishing last minute setup..."
     echo 0 > /proc/sys/kernel/hung_task_timeout_secs
-    curl -O 'https://raw.githubusercontent.com/ChaoticHackingNetwork/Harch/main/hArchPost' >/dev/null
+    curl -O $GITHUB/main/hArchPost >/dev/null
     chmod +x hArchPost
     mv hArchPost /mnt
     print_info "Time to enter CHROOT"

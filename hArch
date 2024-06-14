@@ -157,7 +157,7 @@ partition_drive() {
             mkdir -p /mnt/boot/EFI
             mount "${drive}p1" /mnt/boot/EFI
             swapon "${drive}p2"
-        elif [[ $drive == sd* ]]; then
+        elif [[ $drive == *sd* ]]; then
             mkfs.fat -F32 "${drive}1" # Format EFI partition
             mkswap "${drive}2"         # Format swap partition
             mkfs.ext4 "${drive}3"      # Format root partition

@@ -228,11 +228,11 @@ main() {
     print_info "Otherwise, automated partition will create the standard BIOS/UEFI partitions"
     echo ${NEWLINE}
     local drive=$(prompt_for_input "Enter Drive to prepare (e.g., /dev/sda): ")
-    local manual=$(prompt_for_input "Do you want to manually partition [y/n]: ")
+    local manual=$(prompt_for_input "Manually partition [y/n]: ")
 
     if [[ $manual == 'y' || $manual == 'Y' ]]; then
         cfdisk "$drive"
-        print_info "Entering BASH shell. Make your filesystem and mount /mnt. Type exit once finished."
+        print_info "Entering BASH shell. Create filesystem and mount /mnt. Type exit once finished."
         print_info "System is $is_uefi_system"
         bash
     else

@@ -31,6 +31,11 @@ prompt_for_input() {
     echo "response"
 }
 
+sleep_and_clear() {
+    sleep 3
+    clear
+}
+
 # Basic Packages
 installer() {
     print_info "What would you like your system name set too..."
@@ -43,25 +48,14 @@ installer() {
 
 # Setup Desktop Env
 desktopEnv() {
-    print_info "Choose a Desktop Environment"
-    print_info "Select number corresponding to DE you want, after installation enter 8 to continue if prompt returns${NEWLINE}"
-    
-    DEs=("Mate" "KDE" "Gnome" "Cinnamon" "Deepin" "Enlightenment" "i3" "Skip")
-    select opt in "${DEs[@]}"
-    do
-        case $opt in
-            "Mate") install_desktop "mate mate-extra lightdm lightdm-gtk-greeter" "lightdm" ;;
-            "KDE") install_desktop "plasma kde-applications sddm" "sddm" ;;
-            "Gnome") install_desktop "gnome gnome-extra lxdm" "lxdm" ;;
-            "Cinnamon") install_desktop "cinnamon gnome-terminal lxdm" "lxdm" ;;
-            "Deepin") install_desktop "deepin deepin-extra sddm" "sddm" ;;
-            "Enlightenment") install_desktop "enlightenment terminology connman bluez bluez-utils sddm" "sddm" ;;
-            "i3") install_desktop "i3-gaps i3blocks i3lock numlockx sddm sddm-kcm" "sddm" ;;
-            "Skip") break ;;
-            *) log_error "Invalid Option, Try Again..." ;;
-        esac
-        print_info "Install as many as you want, the last one installed will be default, enter 8 too continue"
-    done
+    print_info "Setting up DE..."
+    pacman -S  mate mate-extra lightdm lightdm-gtk-greeter dconf dconf-editor xorg xorg-server xorg-apps xorg-xinit --noconfirm >/dev/null
+    systemctl enable lightdm >/dev/null
+    sleep 3
+    curl -O https://raw.githubusercontent.com/Binary-Brawler/hArch/main/linux-vs-windows.jpg
+    mv /linux-vs-windows.jpg /usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg
+    curl -O https://raw.githubusercontent.com/Binary-Brawler/hArch/main/MateConfig
+    dconf load /org/mate/ < /MateConfig
 }
 
 # Setup Developer Env
@@ -69,7 +63,7 @@ devSetup() {
     coder=$(prompt_for_input "Can you code? [Y/n]: ")
     if [[ $coder == 'y' || $coder == 'Y' ]]; then
         print_info "Setting up a coding env... This may take awhile"
-        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim --needed --noconfirm >/dev/null 2>&1
+        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1
         haskellIsTheBest=$(prompt_for_input "Can you code in Haskell? [y/N]: ")
         if [[ $haskellIsTheBest == 'y' || $haskellIsTheBest == 'Y' ]]; then
             userHome=$(ls /home)
@@ -78,29 +72,12 @@ devSetup() {
             print_info "Setting up GHCUP!"
             cd ghcup-hs-bin && echo 'y' | makepkg -si >/dev/null 2>&1
         else
-            log_warning "Ill post a blog posting soon as too why I love Haskell"
+            log_warning "Give it a whirl..."
         fi
     else
         log_warning "Do you know where the term Script Kiddie comes from?"
+        sleep_and_clear
     fi
-}
-
-# DE Wrapper
-install_desktop() {
-    packages="$1"
-    display_manager="$2"
-    print_info "Installing Desktop Env..."
-    pacman -S $packages xorg xorg-server xorg-apps xorg-xinit --needed --noconfirm >/dev/null
-    sleep 5
-    if [[ $packages == *"deepin"* ]]; then
-        sed -i '/^greeter-session=/c\greeter-session=lightdm-deepin-greeter' /etc/lightdm/lightdm.conf
-    fi
-    if [[ $packages == *"enlightenment"* ]]; then
-        systemctl enable connman >/dev/null
-        systemctl enable bluetooth >/dev/null
-    fi
-    #handle_nvidia
-    systemctl enable $display_manager >/dev/null
 }
 
 # Nvidia function to handle nvidia driver installation... WIP
@@ -211,32 +188,26 @@ vimSetup() {
 hackTools() {
     ht=$(prompt_for_input 'Do you want to add the Master Hacking Toolset? [y/N]: ')
     if [[ $ht == 'y' || $ht == 'Y' ]]; then
-        print_info "Installing Master Hacking Toolset..."
+        print_info "Installing Master Hacking Toolset... Go grab a drink!"
         curl -O $GITHUB/main/Tools/Master >/dev/null
         pacman -S - < /Master --noconfirm
     else
         log_warning "Skipping..."
-        curl -O $GITHUB/main/Tools/Master >/dev/null
     fi
 }
 
 complete() {
-    print_info "-----------------------------------------------------"
+    print_info "-------------------------------------------------------------------------------------------------"
     neofetch
-    print_info "-----------------------------------------------------"
+    print_info "-------------------------------------------------------------------------------------------------"
     log_success "hArch has been successfully installed on your system"
     print_info "Hack the Universe $username"
-    print_info "A reboot should now take place"
+    log_warning "A reboot should now take place"
     print_info "Run the following commands to reboot properly:"
-    print_info "1: exit"
-    print_info "2: umount -a"
-    print_info "3: reboot"
+    log_warning "1: exit"
+    log_warning "2: umount -a"
+    log_warning "3: reboot"
     exit
-}
-
-sleep_and_clear() {
-    sleep 3
-    clear
 }
 
 # oneFuncToRuleThemAll

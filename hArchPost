@@ -117,7 +117,7 @@ devSetup() {
         print_info "Setting up a coding env... This may take awhile"
         echo "-------------------------------------------------------"
         users=$(ls /home)
-        curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null
+        curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null 2>&1
         mv vimrc_bundle_conf /home/$users/.vimrc
         pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1 
         read -p "Can you code in Haskell? [y/N]: " haskellIsTheBest

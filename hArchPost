@@ -127,7 +127,7 @@ devSetup() {
             sleep 2
             print_info "Setting up GHCUP!"
             echo "-------------------------"
-            cd ghcup-hs-bin && yes 'y' | makepkg -si 
+            cd ghcup-hs-bin && su $users && yes 'y' | makepkg -si --noconfirm
             sleep 10
 
         else

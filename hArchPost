@@ -69,7 +69,9 @@ desktopEnv() {
     mv /linux-vs-windows.jpg /usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg
     curl -O $GITHUB/main/MateConfig.txt >/dev/null 2>&1
     sleep 2
-    dconf load /org/mate/ < MateConfig.txt
+    dconf reset -f /org/mate/
+    sleep 1
+    dconf load /org/mate/ < MateConfig
 }
 
 # Setup Developer Env
@@ -79,6 +81,9 @@ devSetup() {
     if [[ $coder == 'y' || $coder == 'Y' ]]; then
         print_info "Setting up a coding env... This may take awhile"
         print_info "---------------------------------------------------"
+        users=$(ls /home)
+        curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null
+        mv vimrc_bundle_conf /home/$users/.vimrc
         pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1 
         read -p "Can you code in Haskell? [y/N]: " haskellIsTheBest
         if [[ $haskellIsTheBest == 'y' || $haskellIsTheBest == 'Y' ]]; then
@@ -154,11 +159,10 @@ userInfo() {
     passwd
     print_info "--------------------------"
     read -p "Enter Username: " username
-    print_info "Creating a new user: $username"
     useradd -mg users -G wheel,power,storage -s /usr/bin/fish $username
     echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/wheel_group
     chmod 440 /etc/sudoers.d/wheel_group
-    print_info "Setting password for user: $username"
+    print_info "Password for user: $username"
     passwd $username
 }
 
@@ -171,7 +175,7 @@ booter() {
     echo -e "[${YELLOW}SYNTAX${RESET}] If BIOS, attach bootloader to disk: ex- /dev/sda"
     echo -e "[${YELLOW}SYNTAX${RESET}] If UEFI, attach bootloader to partition: ex- /dev/nvme0n1p1"
     print_info "-------------------------------------------------------------------------------------------------"
-    read -p "Enter Drive to install Bootloader [Example: /dev/nvme0n1p1]: " drive
+    read -p "Enter Drive/Partition to install Bootloader [Example: /dev/nvme0n1p1]: " drive
     if [[ -d "/sys/firmware/efi" ]]; then
         print_info "Installing UEFI Bootloader..."
         pacman -S efibootmgr grub dosfstools mtools os-prober --noconfirm >/dev/null
@@ -190,27 +194,13 @@ booter() {
 # Setup blackarch repo for tooling
 blackArch() {
     print_info "--------------------------------------------------------"
-    print_info "Installing BlackArch Repo and setting everything up..."
+    print_info "Installing BlackArch Repo and setting up keyring..."
     curl -O 'https://blackarch.org/strap.sh' >/dev/null 2>&1
     chmod +x strap.sh
     ./strap.sh >/dev/null
     sleep 3
-    print_info "Installing Blackarch Keyring"
+    print_info "Updating Blackarch Keyring"
     pacman -Syu --noconfirm >/dev/null 2>&1
-}
-
-# Setup VIM 
-vimSetup() {
-    print_info "---------------------------------------------"
-    read -p "Do you want to add Bundle to VIM? [y/n]: " vim
-    if [[ $vim == 'y' || $vim == 'Y' ]]; then
-        print_info "Adding Bundle to VIM..."
-        users=$(ls /home)
-        curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null
-        mv vimrc_bundle_conf /home/$users/.vimrc
-    else
-        log_warning "Skipping..."
-    fi
 }
 
 # Install 3gb worth of tools
@@ -263,10 +253,7 @@ oneFuncToRuleThemAll() {
 
     hackTools
     sleep_and_clear
-
-    vimSetup
-    sleep_and_clear
-
+    
     desktopEnv
     sleep_and_clear
 

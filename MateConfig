@@ -30,7 +30,7 @@ togglekeys-enable=false
 
 [desktop/background]
 color-shading-type='vertical-gradient'
-picture-filename='/home/chaotic/Downloads/linux-vs-windows-4ww9em1696ein9fr.jpg'
+picture-filename='/usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg'
 picture-options='zoom'
 primary-color='rgb(88,145,188)'
 secondary-color='rgb(60,143,37)'

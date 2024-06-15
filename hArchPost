@@ -51,7 +51,7 @@ sleep_and_clear() {
 
 # Are we enabling parallel downloads again...
 function pDownload() {
-    print_info "----------------------------"
+    echo "--------------------------------"
     # Inside your arch-chroot script
     enable_parallel=$(cat /enable_parallel.txt)
 
@@ -66,39 +66,53 @@ function pDownload() {
 
 # Basic Packages
 installer() {
-    print_info "---------------------------------------------------"
+    echo "-------------------------------------------------------"
     print_info "What would you like your system name set too..."
     read -p "Enter Hostname: " hostname
     echo $hostname > /etc/hostname
-    print_info "Installing some handy packages..." 
-    print_info "---------------------------------------"
+    print_info "Installing useful packages..." 
+    echo  "--------------------------------------------"
     pacman -S dkms linux-headers mlocate cmake neofetch firefox flameshot net-tools dnsutils dconf dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null 2>&1
     hwclock --systohc
 }
 
 # Setup Desktop Env
 desktopEnv() {
-    print_info "------------------"
+    echo "------------------------"
     print_info "Setting up DE..."
     pacman -S  mate mate-extra lightdm lightdm-gtk-greeter xorg xorg-server xorg-apps xorg-xinit --noconfirm >/dev/null 2>&1
     systemctl enable lightdm >/dev/null 2>&1
     sleep 3
     curl -O $GITHUB/main/linux-vs-windows.jpg >/dev/null 2>&1
     mv /linux-vs-windows.jpg /usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg
-    curl -O $GITHUB/main/MateConfig.txt >/dev/null 2>&1
+    curl -O $GITHUB/main/MateConfig >/dev/null 2>&1
     sleep 2
     dconf reset -f /org/mate/
     sleep 1
-    dconf load /org/mate/ < MateConfig
+    
+    # Attempt to load MateConfig into dconf.. Pain getting this working
+    load_dconf() {
+        dconf load /org/mate/ < MateConfig
+        return $?
+    }
+
+    if ! load_dconf; then
+        log_error "----------------------------------"
+        echo "Error: Failed to load dconf settings."
+    else
+        echo "-------------------------------------"
+        echo "Successfully loaded dconf settings."
+    fi
 }
 
 # Setup Developer Env
 devSetup() {
-    print_info "---------------------------"
+    echo "--------------------------------"
     read -p "Can you code? [Y/n]: " coder
     if [[ $coder == 'y' || $coder == 'Y' ]]; then
+        echo "-------------------------------------------------------"
         print_info "Setting up a coding env... This may take awhile"
-        print_info "---------------------------------------------------"
+        echo "-------------------------------------------------------"
         users=$(ls /home)
         curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null
         mv vimrc_bundle_conf /home/$users/.vimrc
@@ -109,7 +123,7 @@ devSetup() {
             cd /home/$user && mkdir -p ~/AUR && cd ~/AUR && git clone https://aur.archlinux.org/ghcup-hs-bin.git
             sleep 2
             print_info "Setting up GHCUP!"
-            print_info "--------------------"
+            echo "-------------------------"
             cd ghcup-hs-bin && yes 'y' | makepkg -si >/dev/null 2>&1
             sleep 10
 
@@ -136,7 +150,7 @@ handle_nvidia() {
 
 # Basic Video Driver setup
 vidDriver() {
-    print_info "-----------------------------"
+    echo "----------------------------------"
     print_info "Gathering Graphics info..."
     sleep 2
     str=$(lspci -vmm | grep VGA -A6)
@@ -145,12 +159,12 @@ vidDriver() {
     case $str in
         *"$AMD"*)
             print_info "Installing AMD Drivers..."
-            print_info "----------------------------"
+            echo "------------------------------------"
             pacman -S xf86-video-ati xf86-video-amdgpu mesa --noconfirm --needed >/dev/null
             ;;
         *"$NVD"*)
             print_info "Installing NVIDIA Drivers..."
-            print_info "-------------------------------"
+            echo "-------------------------------------"
             pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm --needed >/dev/null
             curl -O $GITHUB/main/nvidia.hook >/dev/null
             curl -O $GITHUB/main/20-nvidia.conf >/dev/null
@@ -165,17 +179,17 @@ vidDriver() {
             ;;
         *)
             print_info "Unable to determine Graphics info.. Installing default drivers"
-            print_info "-----------------------------------------------------------------"
+            echo "----------------------------------------------------------------------"
             pacman -S xf86-video-fbdev --noconfirm
     esac
 }
 
 # Setup local/root user accounts
 userInfo() {
-    print_info "--------------------------"
+    echo "--------------------------------"
     print_info "Setting Root password..."
     passwd
-    print_info "--------------------------"
+    echo "-------------------------------"
     read -p "Enter Username: " username
     useradd -mg users -G wheel,power,storage -s /usr/bin/fish $username
     echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/wheel_group
@@ -186,13 +200,13 @@ userInfo() {
 
 # Bootloader - eventually will be automated
 booter() {
-    print_info "------------------------"
+    echo "-----------------------------"
     print_info "Setting Bootloader..."
     drives=$(lsblk -f)
     echo -e "$drives${NEWLINE}"
     echo -e "[${YELLOW}SYNTAX${RESET}] If BIOS, attach bootloader to disk: ex- /dev/sda"
     echo -e "[${YELLOW}SYNTAX${RESET}] If UEFI, attach bootloader to partition: ex- /dev/nvme0n1p1"
-    print_info "-------------------------------------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------------------------"
     read -p "Enter Drive/Partition to install Bootloader [Example: /dev/nvme0n1p1]: " drive
     if [[ -d "/sys/firmware/efi" ]]; then
         print_info "Installing UEFI Bootloader..."
@@ -211,7 +225,7 @@ booter() {
 
 # Setup blackarch repo for tooling
 blackArch() {
-    print_info "--------------------------------------------------------"
+    echo "-----------------------------------------------------------"
     print_info "Installing BlackArch Repo and setting up keyring..."
     curl -O 'https://blackarch.org/strap.sh' >/dev/null 2>&1
     chmod +x strap.sh
@@ -223,7 +237,7 @@ blackArch() {
 
 # Install 3gb worth of tools
 hackTools() {
-    print_info "---------------------------------------------------------"
+    echo "---------------------------------------------------------------"
     read -p 'Do you want to add the Master Hacking Toolset? [y/N]: ' ht
     if [[ $ht == 'y' || $ht == 'Y' ]]; then
         print_info "Installing Master Hacking Toolset... Go grab a drink!"
@@ -236,9 +250,9 @@ hackTools() {
 
 complete() {
     sleep_and_clear
-    print_info "-------------------------------------------------------------------------------------------------"
+    echo "-------------------------------------------------------------------------------------------------"
     neofetch
-    print_info "-------------------------------------------------------------------------------------------------"
+    echo "-------------------------------------------------------------------------------------------------"
     log_success "hArch has been successfully installed on your system"
     print_info "-------------------------------------------------------"
     print_info "Hack the Universe $username"

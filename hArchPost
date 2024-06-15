@@ -177,7 +177,7 @@ vidDriver() {
             echo "-------------------------------------------------------------"
             print_info "Attempting too force composition..."
             print_info "[!] Usually fixes screen tearing w/ Nvidia drivers...
-            bash -c "nvidia-settings --assign CurrentMetaMode=\"$(nvidia-settings -q CurrentMetaMode -t | sed 's/"/\\"/g; s/}/, ForceCompositionPipeline = On}/')\""
+            bash -c "nvidia-settings --assign CurrentMetaMode=\"$(nvidia-settings -q CurrentMetaMode -t | sed 's/"/\\"/g; s/}/, ForceCompositionPipeline = On}/')\"
             # FIXME
             # Add changes to mkinitcpio.conf - WIP
             # If issues, try:

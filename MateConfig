@@ -30,7 +30,7 @@ togglekeys-enable=false
 
 [desktop/background]
 color-shading-type='vertical-gradient'
-picture-filename='/usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg'
+picture-filename='/home/chaotic/Downloads/linux-vs-windows-4ww9em1696ein9fr.jpg'
 picture-options='zoom'
 primary-color='rgb(88,145,188)'
 secondary-color='rgb(60,143,37)'
@@ -56,7 +56,7 @@ theme='BlackMATE'
 theme='coco'
 
 [panel/general]
-object-id-list=['menu-bar', 'notification-area', 'clock', 'show-desktop', 'window-list', 'workspace-switcher', 'object-0', 'object-2', 'object-1', 'object-4', 'object-5', 'object-7', 'object-8', 'object-9', 'object-10', 'object-11']
+object-id-list=['menu-bar', 'notification-area', 'clock', 'show-desktop', 'window-list', 'workspace-switcher', 'object-0', 'object-2', 'object-8', 'object-9', 'object-10', 'object-11']
 toplevel-id-list=['top', 'bottom']
 
 [panel/objects/clock]
@@ -88,22 +88,6 @@ panel-right-stick=false
 position=288
 toplevel-id='top'
 
-[panel/objects/object-1]
-applet-iid='MateWeatherAppletFactory::MateWeatherApplet'
-object-type='applet'
-panel-right-stick=false
-position=1703
-toplevel-id='top'
-
-[panel/objects/object-1/prefs]
-coordinates=''
-enable-radar-map=true
-location1=''
-location2=''
-location3=''
-location4=''
-use-custom-radar-url=false
-
 [panel/objects/object-10]
 launcher-location='/usr/share/applications/org.flameshot.Flameshot.desktop'
 object-type='launcher'
@@ -124,29 +108,6 @@ object-type='launcher'
 panel-right-stick=false
 position=334
 toplevel-id='top'
-
-[panel/objects/object-4]
-applet-iid='MultiLoadAppletFactory::MultiLoadApplet'
-object-type='applet'
-panel-right-stick=false
-position=1600
-toplevel-id='top'
-
-[panel/objects/object-5]
-object-type='separator'
-panel-right-stick=false
-position=1647
-toplevel-id='top'
-
-[panel/objects/object-7]
-applet-iid='CPUFreqAppletFactory::CPUFreqApplet'
-object-type='applet'
-panel-right-stick=false
-position=955
-toplevel-id='top'
-
-[panel/objects/object-7/prefs]
-show-text-mode=2
 
 [panel/objects/object-8]
 launcher-location='/usr/share/applications/cherrytree.desktop'

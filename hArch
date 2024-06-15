@@ -4,10 +4,11 @@
 # hArch Installer (Hackers Arch)                                 |
 # ---------------------------------------------------------------
 # Author    : Binary-Brawler                                     |
-# Github    : https://github.com/Binary-Brawler                  |
-# Version   : 1.0.2                     	 					 | 
+# Github    : github.com/Binary-Brawler                          |
+# LinkedIn  : linkedin.com/in/brandon-walker-0b0542116/          |
+# Version   : 1.0.2                                              |
+# Intent    : Simplistic Linux box for Red Teaming/Pentesting    | 
 # ---------------------------------------------------------------
-
 
 # Constants
 GREEN='\033[0;32m'
@@ -18,7 +19,6 @@ PURPLE='\033[0;35m'
 RESET='\033[0m'
 NEWLINE=$'\n'
 GITHUB='https://raw.githubusercontent.com/Binary-Brawler/hArch'
-
 
 # Logging
 log_warning() { echo -e "[${YELLOW}WARNING${RESET}] $1"; }
@@ -34,6 +34,7 @@ prompt_for_input() {
 
 # Simple greeter function
 greet() {
+    sleep_and_clear
 	echo -e "${PURPLE}Binary-Brawler's hArch Installer${RESET}"
 	echo ${NEWLINE}
 	echo ${NEWLINE}
@@ -89,7 +90,6 @@ checkNet() {
     fi
 }
 
-
 # Calculate Swap Size Based on System RAM
 # Improve this...
 calculate_swap_size() {
@@ -114,7 +114,6 @@ calculate_swap_size() {
 
     echo "$swap_size"
 }
-
 
 # Partitioning Function
 partition_drive() {
@@ -234,6 +233,7 @@ main() {
     sleep 1
     checkNet
     sleep 1
+    echo "----------------------------"
     print_info "Gathering drives..."
     lsblk #TODO: Add something more robust
     print_info "Time to select the drive you want too partition..."

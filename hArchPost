@@ -4,10 +4,11 @@
 #hArchPost - Post install - Downloadeded after hArch finishes    |
 # ---------------------------------------------------------------
 # Author    : Binary-Brawler                                     |
-# Github    : https://github.com/Binary-Brawler                  |
+# Github    : github.com/Binary-Brawler                          |
+# LinkedIn  : linkedin.com/in/brandon-walker-0b0542116/          |
 # Version   : 1.0.2                                              |
+# Intent    : Simplistic Linux box for Red Teaming/Pentesting    |
 # ---------------------------------------------------------------
-
 
 # Constants
 GREEN='\033[0;32m'

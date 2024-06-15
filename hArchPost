@@ -23,7 +23,25 @@ GITHUB='https://raw.githubusercontent.com/Binary-Brawler/hArch'
 log_warning() { echo -e "[${YELLOW}WARNING${RESET}] $1"; }
 log_error() { echo -e "[${RED}ERROR${RESET}] $1"; }
 print_info() { echo -e "[${GREEN}INFO${RESET}] $1${NEWLINE}"; }
-log_success() { echo -e "[SUCCESS] $1"; }
+log_success() {
+    local num_quotes=${#motivational_quotes[@]}
+    local random_index=$((RANDOM % num_quotes))
+    local random_quote="${motivational_quotes[$random_index]}"
+    echo -e "${GREEN}[SUCCESS]${RESET} $1"
+    echo "Motivational Quote: $random_quote"
+}
+
+# Array of motivational quotes
+motivational_quotes=(
+    "Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill"
+    "Hardships often prepare ordinary people for an extraordinary destiny. - C.S. Lewis"
+    "Believe you can and you're halfway there. - Theodore Roosevelt"
+    "The only limit to our realization of tomorrow will be our doubts of today. - Franklin D. Roosevelt"
+    "It does not matter how slowly you go as long as you do not stop. - Confucius"
+    "You are never too old to set another goal or to dream a new dream. - C.S. Lewis"
+    "The only way to achieve the impossible is to believe it is possible. - Charles Kingsleigh (Alice in Wonderland)"
+)
+
 
 # Repeats turned into functions ;) 
 sleep_and_clear() {
@@ -222,6 +240,7 @@ complete() {
     neofetch
     print_info "-------------------------------------------------------------------------------------------------"
     log_success "hArch has been successfully installed on your system"
+    print_info "-------------------------------------------------------"
     print_info "Hack the Universe $username"
     log_warning "A reboot should now take place"
     print_info "Run the following commands to reboot properly:"
@@ -253,7 +272,7 @@ oneFuncToRuleThemAll() {
 
     hackTools
     sleep_and_clear
-    
+
     desktopEnv
     sleep_and_clear
 

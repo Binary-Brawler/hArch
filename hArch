@@ -37,7 +37,7 @@ greet() {
 	echo -e "${PURPLE}Binary-Brawler's hArch Installer${RESET}"
 	echo ${NEWLINE}
 	echo ${NEWLINE}
-    print_info "-------------------------------------------------------------------------------------------------"
+    echo "-------------------------------------------------------------------------------------------------"
 	echo -e ${YELLOW}
 	echo ${NEWLINE}
 	echo ${NEWLINE}
@@ -54,12 +54,12 @@ greet() {
 	echo -e "${RESET}"
 	echo ${NEWLINE}
 	echo ${NEWLINE}
-    print_info "-------------------------------------------------------------------------------------------------"
+    echo "-------------------------------------------------------------------------------------------------"
 }
 
 # Check Internet Connection
 checkNet() {
-    print_info "----------------------------------"
+    echo "---------------------------------------"
     print_info "Checking Internet Connection..."
     
     # Check if speedtest-cli is installed
@@ -74,8 +74,9 @@ checkNet() {
     sleep 1
     local speed=$(./speedtest-cli --simple | awk '/^Download:/ {print $2}')
     sleep 1
-    print_info "-----------------------------"
+    echo "------------------------------------"
     print_info "Download Speed: $speed Mbps"
+    echo "------------------------------------"
     
     # Check if download speed is greater than 50 Mbps
     if (( $(echo "$speed > 50" | bc -l) )); then
@@ -197,7 +198,7 @@ partition_drive() {
 
 # Installer Function
 installer() {
-    print_info "---------------------------"
+    echo "--------------------------------"
     print_info "Installing Arch base..."
     sleep 2
     pacstrap /mnt base base-devel linux linux-firmware vi vim nano dhcpcd iwd >/dev/null 2>&1
@@ -208,18 +209,18 @@ installer() {
 
 # Last Minute Setup Function
 lastMinSetup() {
-    print_info "---------------------------------"
+    echo "--------------------------------------"
     print_info "Finishing last minute setup..."
     echo 0 > /proc/sys/kernel/hung_task_timeout_secs
     mv enable_parallel.txt /mnt
     curl -O $GITHUB/main/hArchPost >/dev/null 2>&1
     chmod +x hArchPost
     mv hArchPost /mnt
-    print_info "------------------------"
+    echo  "----------------------------"
     print_info "Time to enter CHROOT"
     print_info "The final script has been installed and moved to your new root directory"
     print_info "Run these commands to finish setup"
-    print_info "--------------------------------------"
+    echo "------------------------------------------"
     echo ${NEWLINE}
     echo ${NEWLINE}
     echo -e "[1]${GREEN} arch-chroot /mnt${RESET}"
@@ -239,16 +240,18 @@ main() {
     print_info "If you want to manually partition you may, just type exit after mounting /mnt"
     print_info "Otherwise, automated partition will create the standard BIOS/UEFI partitions"
     echo ${NEWLINE}
-    local drive=$(prompt_for_input "Enter Drive to prepare (e.g., /dev/sda): ")
+    echo "--------------------------------------------------------"
     local manual=$(prompt_for_input "Manually partition [y/n]: ")
 
     if [[ $manual == 'y' || $manual == 'Y' ]]; then
         cfdisk "$drive"
         print_info "Entering BASH shell. Create filesystem and mount /mnt. Type exit once finished."
-        print_info "System is $is_uefi_system"
         bash
     else
-        print_info "Modifying $drive... HANG TIGHT!!!"
+        echo "-----------------------------------------------------------------------"
+        local drive=$(prompt_for_input "Enter Drive to prepare (e.g., /dev/sda): ")
+        echo "--------------------------------------------------------"
+        print_info "Modifying $drive..."
         sleep 3
 
         partition_drive "$drive"

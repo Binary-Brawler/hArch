@@ -171,9 +171,12 @@ vidDriver() {
             pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm >/dev/null
             curl -O $GITHUB/main/nvidia.hook >/dev/null
             curl -O $GITHUB/main/20-nvidia.conf >/dev/null
-            mv nvidia.hook /etc/pacman.d/hooks
+            mv nvidia.hook /etc/pacman.d/hooks/
             mv 20-nvidia.conf /etc/X11/xorg.conf.d/
             bash -c "echo blacklist nouveau > /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
+            echo "-------------------------------------"
+            print_info "Attempting too force composition..."
+            bash -c "nvidia-settings --assign CurrentMetaMode=\"$(nvidia-settings -q CurrentMetaMode -t | sed 's/"/\\"/g; s/}/, ForceCompositionPipeline = On}/')\""
             # FIXME
             # Add changes to mkinitcpio.conf - WIP
             # If issues, try:

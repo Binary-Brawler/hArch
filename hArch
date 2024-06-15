@@ -59,7 +59,7 @@ greet() {
 
 # Check Internet Connection
 checkNet() {
-    print_info "-------------------------------------------------------------------------------------------------"
+    print_info "----------------------------------"
     print_info "Checking Internet Connection..."
     
     # Check if speedtest-cli is installed
@@ -197,7 +197,7 @@ partition_drive() {
 
 # Installer Function
 installer() {
-    print_info "-------------------------------------------------------------------------------------------------"
+    print_info "---------------------------"
     print_info "Installing Arch base..."
     sleep 2
     pacstrap /mnt base base-devel linux linux-firmware vi vim nano dhcpcd iwd >/dev/null 2>&1
@@ -208,18 +208,18 @@ installer() {
 
 # Last Minute Setup Function
 lastMinSetup() {
-    print_info "-------------------------------------------------------------------------------------------------"
+    print_info "---------------------------------"
     print_info "Finishing last minute setup..."
     echo 0 > /proc/sys/kernel/hung_task_timeout_secs
     mv enable_parallel.txt /mnt
     curl -O $GITHUB/main/hArchPost >/dev/null 2>&1
     chmod +x hArchPost
     mv hArchPost /mnt
-    print_info "-------------------------------------------------------------------------------------------------"
+    print_info "------------------------"
     print_info "Time to enter CHROOT"
     print_info "The final script has been installed and moved to your new root directory"
     print_info "Run these commands to finish setup"
-    print_info "-------------------------------------------------------------------------------------------------"
+    print_info "--------------------------------------"
     echo ${NEWLINE}
     echo ${NEWLINE}
     echo -e "[1]${GREEN} arch-chroot /mnt${RESET}"

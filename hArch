@@ -26,6 +26,12 @@ log_error() { echo -e "[${RED}ERROR${RESET}] $1"; }
 print_info() { echo -e "[${GREEN}INFO${RESET}] $1${NEWLINE}"; }
 log_success() { echo -e "[SUCCESS] $1"; }
 
+# Repeats turned into functions ;) 
+sleep_and_clear() {
+    sleep 3
+    clear
+}
+
 # User Input
 prompt_for_input() {
     read -p "$1" response
@@ -258,8 +264,12 @@ main() {
     fi
 
     installer || log_error "Base system installation failed. Exiting."
+
+    sleep_and_clear
     
     lastMinSetup || log_warning "Last minute setup encountered issues."
+
+    sleep_and_clear
 
     log_success "hArch Installation completed successfully!"
 

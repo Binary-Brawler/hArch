@@ -71,8 +71,9 @@ installer() {
     print_info "What would you like your system name set too..."
     read -p "Enter Hostname: " hostname
     echo $hostname > /etc/hostname
+    sleep_and_clear
+    echo  "------------------------------------"
     print_info "Installing useful packages..." 
-    echo  "--------------------------------------------"
     pacman -S dkms linux-headers mlocate cmake neofetch firefox flameshot net-tools dnsutils dconf dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null 2>&1
     hwclock --systohc
 }
@@ -98,8 +99,9 @@ desktopEnv() {
     }
 
     if ! load_dconf; then
-        log_error "----------------------------------"
+        log_error "---------------------------------------------------------"
         echo "Error: Failed to load dconf settings."
+        echo "Try manually running - (dconf load /org/mate/ < MateConfig)"
     else
         echo "-------------------------------------"
         echo "Successfully loaded dconf settings."
@@ -125,7 +127,7 @@ devSetup() {
             sleep 2
             print_info "Setting up GHCUP!"
             echo "-------------------------"
-            cd ghcup-hs-bin && yes 'y' | makepkg -si >/dev/null 2>&1
+            cd ghcup-hs-bin && yes 'y' | makepkg -si 
             sleep 10
 
         else
@@ -161,12 +163,12 @@ vidDriver() {
         *"$AMD"*)
             print_info "Installing AMD Drivers..."
             echo "------------------------------------"
-            pacman -S xf86-video-ati xf86-video-amdgpu mesa --noconfirm --needed >/dev/null
+            pacman -S xf86-video-ati xf86-video-amdgpu mesa --noconfirm >/dev/null
             ;;
         *"$NVD"*)
             print_info "Installing NVIDIA Drivers..."
             echo "-------------------------------------"
-            pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm --needed >/dev/null
+            pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm >/dev/null
             curl -O $GITHUB/main/nvidia.hook >/dev/null
             curl -O $GITHUB/main/20-nvidia.conf >/dev/null
             mv nvidia.hook /etc/pacman.d/hooks
@@ -190,6 +192,7 @@ userInfo() {
     echo "--------------------------------"
     print_info "Setting Root password..."
     passwd
+    sleep_and_clear
     echo "-------------------------------"
     read -p "Enter Username: " username
     useradd -mg users -G wheel,power,storage -s /usr/bin/fish $username
@@ -209,13 +212,16 @@ booter() {
     echo -e "[${YELLOW}SYNTAX${RESET}] If UEFI, attach bootloader to partition: ex- /dev/nvme0n1p1"
     echo "-----------------------------------------------------------------------------------------------------"
     read -p "Enter Drive/Partition to install Bootloader [Example: /dev/nvme0n1p1]: " drive
+    sleep_and_clear
     if [[ -d "/sys/firmware/efi" ]]; then
+        echo "-------------------------------------"
         print_info "Installing UEFI Bootloader..."
         pacman -S efibootmgr grub dosfstools mtools os-prober --noconfirm >/dev/null
         grub-install --target=x86_64-efi --bootloader-id=HARCH_UEFI --efi-directory=/boot/EFI --recheck
         grub-mkconfig -o /boot/grub/grub.cfg
         mkinitcpio -p linux
     else
+        echo "-------------------------------------"
         print_info "Installing BIOS Bootloader..."
         pacman -S grub --noconfirm >/dev/null
         grub-install --target=i386-pc $drive --recheck

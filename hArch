@@ -246,17 +246,17 @@ main() {
     print_info "If you want to manually partition you may, just type exit after mounting /mnt"
     print_info "Otherwise, automated partition will create the standard BIOS/UEFI partitions"
     echo ${NEWLINE}
-    echo "--------------------------------------------------------"
-    local manual=$(prompt_for_input "Manually partition [y/n]: ")
+    echo "--------------------------------------"
+    read -p "Manually partition [y/N]: " manual
 
     if [[ $manual == 'y' || $manual == 'Y' ]]; then
         cfdisk "$drive"
         print_info "Entering BASH shell. Create filesystem and mount /mnt. Type exit once finished."
         bash
     else
-        echo "-----------------------------------------------------------------------"
-        local drive=$(prompt_for_input "Enter Drive to prepare (e.g., /dev/sda): ")
-        echo "--------------------------------------------------------"
+        echo "----------------------------------------------"
+        read -p "Enter Drive to prepare (e.g., /dev/sda): " drive
+        echo "----------------------------"
         print_info "Modifying $drive..."
         sleep 3
 
@@ -268,8 +268,6 @@ main() {
     sleep_and_clear
     
     lastMinSetup || log_warning "Last minute setup encountered issues."
-
-    sleep_and_clear
 
     log_success "hArch Installation completed successfully!"
 

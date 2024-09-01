@@ -29,7 +29,9 @@ log_success() {
     local random_index=$((RANDOM % num_quotes))
     local random_quote="${motivational_quotes[$random_index]}"
     echo -e "${GREEN}[SUCCESS]${RESET} $1"
+    echo ${NEWLINE}
     echo "Motivational Quote: $random_quote"
+    echo ${NEWLINE}
 }
 
 motivational_quotes=(
@@ -79,9 +81,9 @@ function desktop_Env {
     pacman -S  mate mate-extra lightdm lightdm-gtk-greeter xorg xorg-server xorg-apps xorg-xinit --noconfirm >/dev/null 2>&1
     systemctl enable lightdm >/dev/null 2>&1
     sleep 3
-    curl -O $GITHUB/main/linux-vs-windows.jpg >/dev/null 2>&1
+    curl -O $GITHUB/main/conf/linux-vs-windows.jpg >/dev/null 2>&1
     mv /linux-vs-windows.jpg /usr/share/backgrounds/mate/desktop/linux-vs-windows.jpg
-    curl -O $GITHUB/main/MateConfig >/dev/null 2>&1
+    curl -O $GITHUB/main/conf/MateConfig >/dev/null 2>&1
 }
 
 function dev_Setup {
@@ -130,8 +132,8 @@ function vid_Driver {
             print_info "Installing NVIDIA Drivers..."
             echo "-------------------------------------"
             pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm >/dev/null
-            curl -O $GITHUB/main/nvidia.hook >/dev/null
-            curl -O $GITHUB/main/20-nvidia.conf >/dev/null
+            curl -O $GITHUB/main/conf/nvidia.hook >/dev/null
+            curl -O $GITHUB/main/conf/20-nvidia.conf >/dev/null
             mv nvidia.hook /etc/pacman.d/hooks/
             mv 20-nvidia.conf /etc/X11/xorg.conf.d/
             bash -c "echo blacklist nouveau > /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
@@ -160,12 +162,20 @@ function user_Info {
     echo "-------------------------------"
     print_info "Creating user account..."
     read -p "Enter Username: " username
-    echo "-------------------------------------"
-    print_info "Setting $username password..."
     useradd -mg users -G wheel,power,storage -s /usr/bin/fish $username
     echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/wheel_group
     chmod 440 /etc/sudoers.d/wheel_group
+    echo "-------------------------------------"
+    print_info "Setting $username password..."
     passwd $username
+    curl -O $GITHUB/main/conf/fish.config >/dev/null 2>&1
+    mkdir -p /home/$username/.config/fish
+    mv /fish.config /home/$username/.config/fish/config.fish
+    chown $user -R /home/$username/.config/
+    mkdir -p /home/$username/AUR
+    chown -R $user /home/$username/AUR
+    curl -O $GITHUB/main/conf/smb.conf >/dev/null 2>&1
+    mv smb.conf /etc/samba/smb.conf
 }
 
 function booter {
@@ -244,6 +254,7 @@ function one_Func_To_Rule_Them_All {
     done
 }
 
+# Because I can ;)
 function and_In_The_Darkness_Bind_Them {
     local encoded="cF9Eb3dubG9hZCBpbnN0YWxsZXIgdXNlcl9JbmZvIHZpZF9Ecml2ZXIgYm9vdGVyIGJsYWNrX0FyY2ggaGFja19Ub29scyBkZXNrdG9wX0VudiBkZXZfU2V0dXAgY29tcGxldGUK"
     

@@ -20,6 +20,13 @@ Have an old laptop collecting dust? Throw hArch on it. By Default, Networking is
       iwctl station wlan0 get-networks         #List SSID
       iwctl station connect <SSID>             #Connect
       systemctl enable iwd                     #Enable WiFi on Startup
+
+                           -- FISH Functions --
+
+      firstRun                                 #Run this on first run
+      startUp                                  #Starts Ethernet & Updates
+      newHasky                                 #Creates simple Haskell project
+      newPy                                    #Creates simple Python project
    
 
 **Works great with HypverV/irtualbox or Bare-Metal... Whatever you prefer** 

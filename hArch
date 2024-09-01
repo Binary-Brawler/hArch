@@ -228,8 +228,10 @@ main() {
     read -p "Manually partition [y/N]: " manual
 
     if [[ $manual == 'y' || $manual == 'Y' ]]; then
+        echo "--------------------------------------"
         cfdisk "$drive"
         print_info "Entering BASH shell. Create filesystem and mount /mnt. Type exit once finished."
+        echo "-----------------------------------------------------------------------------------------"
         bash
     else
         echo "----------------------------------------------"
@@ -238,7 +240,7 @@ main() {
         print_info "Modifying $drive..."
         sleep 3
 
-        partition_Drive "$drive"
+        partition_Drive "$drive" >/dev/null 2>&1
     fi
 
     installer || { log_error "Base system installation failed. Exiting."; exit 1; }

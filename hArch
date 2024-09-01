@@ -113,7 +113,7 @@ function calculate_Swap_Size {
 
 function partition_Drive {
     local drive="$1"
-    local swap_size=$(calculate_swap_size)
+    local swap_size=$(calculate_Swap_Size)
     local cmd_list=()
 
     if [[ -d "/sys/firmware/efi/efivars/" ]]; then

@@ -10,9 +10,18 @@
 # Intent    : Simplistic Linux box for Red Teaming/Pentesting    |
 #               - BlackArch Repo (Access to tools)               |
 #               - lightwieght distro for older machines          |
-#               - vimrc/nvim/vscode (for coders)
+#               - vimrc/nvim/vscode (for coders)                 |
 # ---------------------------------------------------------------
-
+#                  Function - Purpose                            |
+# ---------------------------------------------------------------------------
+# slear               - Repeated Sleep/Clear function                        |
+# greeter             - Entrypoint                                           |
+# check_Net           - Checks internet speed for parallel downloads         |
+# calculate_Swap_Size - if/else to determine SWAP size                       |
+# partition_Drive     - Automated partitioning following basic Arch install  |
+# installer           - Install base system and copy hArchPost script        |
+# last_Min_Setup      - Installs second script in /mnt and                   |
+# ---------------------------------------------------------------------------
 # Constants
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -190,7 +199,7 @@ function installer {
     genfstab -U /mnt >> /mnt/etc/fstab
 }
 
-function last_MinSetup {
+function last_Min_Setup {
     echo "--------------------------------------"
     print_info "Finishing last minute setup..."
     echo 0 > /proc/sys/kernel/hung_task_timeout_secs

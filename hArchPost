@@ -9,6 +9,23 @@
 # Version   : 1.1.2                                              |
 # Intent    : Simplistic Linux box for Red Teaming/Pentesting    |
 # ---------------------------------------------------------------
+#                  Function - Purpose                            |
+# -----------------------------------------------------------------------------------
+# slear                       - Repeated Sleep/Clear function                        |
+# greeter                     - Entrypoint                                           |
+# p_Download                  - Checks boolean value from previous script            |
+# installer                   - Set Hostname & install useful packages               |
+# desktop_Env                 - Sets MATE by default (low specs)                     |
+# dev_Setup                   - Installs coders env i.e. IDE's, Languages and vimrc  |
+# vid_driver                  - Installs driver based off lspci                      |
+# user_Info                   - Set ROOT pass and create user account                |
+# booter                      - Bootloader function, eventually will be automated    |
+# black_Arch                  - Install BlackArch Repository                         |
+# hack_Tools                  - Installs tools or skip                               |
+# complete                    - Finish last minute setup and cleanup                 |
+# one_Func_To_Rule_Them_All   - Iterative function to run functions                  |
+# and_In_The_Script_Bind_Them - Encoded functions to run                             |
+# -----------------------------------------------------------------------------------
 
 # Constants
 GREEN='\033[0;32m'
@@ -44,7 +61,7 @@ motivational_quotes=(
     "The only way to achieve the impossible is to believe it is possible. - Charles Kingsleigh (Alice in Wonderland)"
 )
 
-function sleep_and_clear {
+function slear {
     sleep 3
     clear
 }
@@ -68,7 +85,7 @@ function installer {
     print_info "What would you like your system name set too..."
     read -p "Enter Hostname: " hostname
     echo $hostname > /etc/hostname
-    sleep_and_clear
+    slear
     echo  "------------------------------------"
     print_info "Installing useful packages..." 
     pacman -S dkms linux-headers mlocate cmake neofetch firefox flameshot net-tools dnsutils dconf dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null 2>&1
@@ -99,7 +116,7 @@ function dev_Setup {
         pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1 
     else
         log_warning "Do you know where the term Script Kiddie comes from?"
-        sleep_and_clear
+        slear
     fi
 }
 
@@ -158,7 +175,7 @@ function user_Info {
     echo "--------------------------------"
     print_info "Setting Root password..."
     passwd
-    sleep_and_clear
+    slear
     echo "-------------------------------"
     print_info "Creating user account..."
     read -p "Enter Username: " username
@@ -187,7 +204,7 @@ function booter {
     echo -e "[${YELLOW}SYNTAX${RESET}] If UEFI, attach bootloader to partition: ex- /dev/nvme0n1p1"
     echo "-----------------------------------------------------------------------------------------------------"
     read -p "Enter Drive/Partition to install Bootloader [Example: /dev/nvme0n1p1]: " drive
-    sleep_and_clear
+    slear
     if [[ -d "/sys/firmware/efi" ]]; then
         echo "-------------------------------------"
         print_info "Installing UEFI Bootloader..."
@@ -212,24 +229,26 @@ function black_Arch {
     chmod +x strap.sh
     ./strap.sh >/dev/null
     sleep 3
+    rm /strap.sh
     print_info "Updating Blackarch Keyring"
     pacman -Syu --noconfirm >/dev/null 2>&1
 }
 
 function hack_Tools {
     echo "---------------------------------------------------------------"
-    read -p 'Do you want to add the Master Hacking Toolset? [y/N]: ' ht
+    read -p 'Do you want to INSTALL the Master Hacking Toolset? [y/N]: ' ht
     if [[ $ht == 'y' || $ht == 'Y' ]]; then
         print_info "Installing Master Hacking Toolset... Go grab a drink!"
         curl -O $GITHUB/main/Tools/Master >/dev/null
         pacman -S - < /Master --noconfirm >/dev/null 2>&1
+        rm /Master
     else
         log_warning "Skipping..."
     fi
 }
 
 function complete {
-    sleep_and_clear
+    slear
     echo "-------------------------------------------------------------------------------------------------"
     neofetch
     echo "-------------------------------------------------------------------------------------------------"
@@ -242,21 +261,23 @@ function complete {
     log_warning "1: exit"
     log_warning "2: umount -a"
     log_warning "3: reboot"
+    rm /hArchPost
     exit
 }
 
 function one_Func_To_Rule_Them_All {
-    local funcs=($(and_In_The_Darkness_Bind_Them))
+    local funcs=($(and_In_The_Script_Bind_Them))
 
     for func in "${funcs[@]}"; do
         $func
-        sleep_and_clear
+        slear
     done
 }
 
-# Because I can ;)
-function and_In_The_Darkness_Bind_Them {
+# Because why not...
+function and_In_The_Script_Bind_Them {
     local encoded="cF9Eb3dubG9hZCBpbnN0YWxsZXIgdXNlcl9JbmZvIHZpZF9Ecml2ZXIgYm9vdGVyIGJsYWNrX0FyY2ggaGFja19Ub29scyBkZXNrdG9wX0VudiBkZXZfU2V0dXAgY29tcGxldGUK"
     
+    # Too easy ;)
     echo "$encoded" | base64 --decode
 }

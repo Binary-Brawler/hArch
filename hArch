@@ -240,7 +240,7 @@ main() {
         print_info "Modifying $drive..."
         sleep 3
 
-        partition_Drive "$drive" >/dev/null 2>&1
+        partition_Drive "$drive"
     fi
 
     installer || { log_error "Base system installation failed. Exiting."; exit 1; }

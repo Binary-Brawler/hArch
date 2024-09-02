@@ -188,11 +188,11 @@ function user_Info {
     curl -O $GITHUB/main/conf/fish.config >/dev/null 2>&1
     mkdir -p /home/$username/.config/fish
     mv /fish.config /home/$username/.config/fish/config.fish
-    chown $user -R /home/$username/.config/
+    chown $username -R /home/$username/.config/
     mkdir -p /home/$username/AUR
-    chown -R $user /home/$username/AUR
+    chown -R $username /home/$username/AUR
     curl -O $GITHUB/main/conf/smb.conf >/dev/null 2>&1
-    mv smb.conf /etc/samba/smb.conf
+    mv /smb.conf /etc/samba/smb.conf
 }
 
 function booter {

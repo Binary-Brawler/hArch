@@ -9,8 +9,9 @@
 # Version   : 1.1.2                                              |
 # Intent    : Simplistic Linux box for Red Teaming/Pentesting    |
 #               - BlackArch Repo (Access to tools)               |
-#               - lightwieght distro for older machines          |
+#               - Lightwieght distro for older machines          |
 #               - vimrc/nvim/vscode (for coders)                 |
+#               - Much efficient install VS Kali/Parrot ;)       |
 # ---------------------------------------------------------------
 #                  Function - Purpose                            |
 # ---------------------------------------------------------------------------

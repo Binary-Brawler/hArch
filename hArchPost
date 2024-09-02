@@ -281,3 +281,5 @@ function and_In_The_Script_Bind_Them {
     # Too easy ;)
     echo "$encoded" | base64 --decode
 }
+
+one_Func_To_Rule_Them_All

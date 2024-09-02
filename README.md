@@ -25,6 +25,7 @@ Have an old laptop collecting dust? Throw hArch on it. By Default, Networking is
 
       firstRun                                 #Run this on first run
       startUp                                  #Starts Ethernet & Updates
+      installHaskell                           #Install Haskell via GHCUP
       newHasky                                 #Creates simple Haskell project
       newPy                                    #Creates simple Python project
    

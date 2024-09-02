@@ -67,6 +67,7 @@ function slear {
 }
 
 function p_Download {
+    slear
     echo "--------------------------------"
     enable_parallel=$(cat /enable_parallel.txt)
 
@@ -88,7 +89,7 @@ function installer {
     slear
     echo  "------------------------------------"
     print_info "Installing useful packages..." 
-    pacman -S dkms linux-headers mlocate cmake neofetch firefox flameshot net-tools dnsutils dconf dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null 2>&1
+    pacman -S dkms linux-headers mlocate cmake neofetch firefox samba flameshot net-tools dnsutils dconf dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu --noconfirm >/dev/null 2>&1
     hwclock --systohc
 }
 
@@ -239,7 +240,7 @@ function hack_Tools {
     read -p 'Do you want to INSTALL the Master Hacking Toolset? [y/N]: ' ht
     if [[ $ht == 'y' || $ht == 'Y' ]]; then
         print_info "Installing Master Hacking Toolset... Go grab a drink!"
-        curl -O $GITHUB/main/Tools/Master >/dev/null
+        curl -O $GITHUB/main/Tools/Master >/dev/null 2>&1
         pacman -S - < /Master --noconfirm >/dev/null 2>&1
         rm /Master
     else

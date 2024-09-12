@@ -55,7 +55,7 @@ To install, boot into Arch live ISO and:
     6. ./hArchPost
     7. Hack the Universe!
  
-At the end of the installation process, you'll encounter a prompt to either download the master toolset or skip. Opting to download the master toolset may extend the installation time by an additional 5-10 minutes. However, this feature will evolve over time with updates. Future iterations will introduce a more user-defined installation process, allowing you to tailor your system more accurately to your needs. For instance, if you're embarking on a reverse engineering task or a web pentest, you can simply select those specific options during installation to receive the necessary tools, streamlining the process and saving time by excluding unnecessary ones.
+During the installation process, you'll encounter a prompt to either download the master toolset or skip. Opting to download the master toolset may extend the installation time by an additional 5-10 minutes. However, this feature will evolve over time with updates. Future iterations will introduce a more user-defined installation process, allowing you to tailor your system more accurately to your needs. For instance, if you're embarking on a reverse engineering task or a web pentest, you can simply select those specific options during installation to receive the necessary tools, streamlining the process and saving time by excluding unnecessary ones.
 
 ### To-Do List
 - [x] vimrc completed
@@ -70,7 +70,7 @@ At the end of the installation process, you'll encounter a prompt to either down
 - [ ] URL shortener
 - [ ] Fix NVIDIA drivers not working
 - [ ] Auto add bootloader
-- [ ] Improve Hacker lab
+- [X] Improve Hacker lab
 - [ ] 2024 Tools/Wordlist improvements
 
 If you wish to communicate with me on any updates or bugs! Create an issue or find me on Discord: @Chaotic_Guru#8356 or email me @bughunt3r88@outlook.com

@@ -89,7 +89,7 @@ function installer {
     slear
     echo  "------------------------------------"
     print_info "Installing useful packages..." 
-    pacman -S dkms linux-headers mlocate cmake neofetch tree firefox samba cherrytree flameshot net-tools dnsutils dconf remmina dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu terminator chromium --noconfirm >/dev/null 2>&1
+    pacman -S dkms linux-headers mlocate cmake neofetch tree firefox samba cherrytree lsof flameshot net-tools dnsutils dconf remmina dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu terminator chromium --noconfirm >/dev/null 2>&1
     hwclock --systohc
 }
 
@@ -150,15 +150,15 @@ function vid_Driver {
             print_info "Installing NVIDIA Drivers..."
             echo "-------------------------------------"
             pacman -S nvidia nvidia-settings nvidia-utils glxinfo nvtop --noconfirm >/dev/null
-            curl -O $GITHUB/main/conf/nvidia.hook >/dev/null
-            curl -O $GITHUB/main/conf/20-nvidia.conf >/dev/null
-            mv nvidia.hook /etc/pacman.d/hooks/
-            mv 20-nvidia.conf /etc/X11/xorg.conf.d/
+            curl -O $GITHUB/main/conf/nvidia.hook 2>/dev/null
+            curl -O $GITHUB/main/conf/20-nvidia.conf 2>/dev/null
+            mv /nvidia.hook /etc/pacman.d/hooks/
+            mv /20-nvidia.conf /etc/X11/xorg.conf.d/
             bash -c "echo blacklist nouveau > /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
             echo "-------------------------------------------------------------"
             print_info "Attempting too force composition..."
-            print_info "[!] Usually fixes screen tearing w/ Nvidia drivers...
-            bash -c "nvidia-settings --assign CurrentMetaMode=\"$(nvidia-settings -q CurrentMetaMode -t | sed 's/"/\\"/g; s/}/, ForceCompositionPipeline = On}/')\"
+            print_info "[!] Usually fixes screen tearing w/ Nvidia drivers..."
+            bash -c "nvidia-settings --assign CurrentMetaMode=\"$(nvidia-settings -q CurrentMetaMode -t | sed 's/"/\\"/g; s/}/, ForceCompositionPipeline = On}/')\""
             # FIXME
             # Add changes to mkinitcpio.conf - WIP
             # If issues, try:

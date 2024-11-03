@@ -1,17 +1,19 @@
 # hArch {Hackers Arch} 
-Version 1.0.2 
+Version 1.0.3 
+__________________________________________________________________________________________________________________________________________________________________
 
 ![hArch](https://github.com/Binary-Brawler/hArch/assets/132982785/8000c3cd-1d2e-4377-91f3-2fec7cb800c2)
 
 
-
+__________________________________________________________________________________________________________________________________________________________________
 
 
 A simplistic Arch build – your gateway to a streamlined Arch Linux experience designed for speed and efficiency. Whether you're a seasoned security researcher, a bug hunter, or simply a Linux enthusiast looking to breathe new life into aging hardware, hArch guarantees a swift and seamless journey – because your hardware's age shouldn't limit your potential.
 
-Geared towards those delving into penetration testing, reverse engineering, or eager to dive into the Linux ecosystem, hArch offers a curated selection of essential tools, downloaded during installation or at your convenience. And with its bash script foundation, customization is not just encouraged, but celebrated. Make hArch truly yours by tweaking to your heart's content.
+Geared towards those delving into penetration testing, reverse engineering, or eager to dive into the Linux ecosystem, hArch offers a curated selection of essential tools, downloaded during installation or at your convenience. And with its bash script foundation, customization is not just encouraged, but celebrated. Make hArch truly yours by tweaking to your heart's content and create your own quick, custom Arch system.
 
 Have an old laptop collecting dust? Throw hArch on it. By Default, Networking is not Enabled. 
+__________________________________________________________________________________________________________________________________________________________________
 
       systemctl enable dhcpcd                  #Enable Ethernet on Startup
       
@@ -21,7 +23,7 @@ Have an old laptop collecting dust? Throw hArch on it. By Default, Networking is
       iwctl station connect <SSID>             #Connect
       systemctl enable iwd                     #Enable WiFi on Startup
 
-                           -- FISH Functions --
+                                -- FISH Functions --
 
       firstRun                                 #Run this on first run
       startUp                                  #Starts Ethernet & Updates
@@ -29,6 +31,7 @@ Have an old laptop collecting dust? Throw hArch on it. By Default, Networking is
       newHasky                                 #Creates simple Haskell project
       newPy                                    #Creates simple Python project
    
+__________________________________________________________________________________________________________________________________________________________________
 
 **Works great with HypverV/irtualbox or Bare-Metal... Whatever you prefer** 
 

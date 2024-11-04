@@ -89,13 +89,13 @@ function installer {
     slear
     echo  "------------------------------------"
     print_info "Installing useful packages..." 
-    pacman -S dkms linux-headers mlocate cmake neofetch tree firefox samba cherrytree lsof flameshot net-tools dnsutils dconf remmina dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu terminator chromium --noconfirm >/dev/null 2>&1
+    pacman -S dkms linux-headers mlocate cmake neofetch tree git firefox samba cherrytree lsof flameshot net-tools dnsutils dconf remmina dconf-editor fish noto-fonts ttf-ubuntu-font-family ttf-dejavu ttf-freefont ttf-liberation ttf-droid ttf-roboto terminus-font rxvt-unicode ranger rofi dmenu terminator chromium --noconfirm >/dev/null 2>&1
     hwclock --systohc
 }
 
 function desktop_Env {
     echo "------------------------"
-    print_info "Setting up DE..."
+    print_info "Setting up MATE DE..."
     pacman -S  mate mate-extra lightdm lightdm-gtk-greeter xorg xorg-server xorg-apps xorg-xinit --noconfirm >/dev/null 2>&1
     systemctl enable lightdm >/dev/null 2>&1
     sleep 3
@@ -114,39 +114,29 @@ function dev_Setup {
         users=$(ls /home)
         curl -O $GITHUB/main/vimrc_bundle_conf >/dev/null 2>&1
         mv vimrc_bundle_conf /home/$users/.vimrc
-        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 git code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1 
+        pacman -S jdk-openjdk python-pip rustup go nodejs npm python3 code neovim gimp audacity wireshark-qt vlc btop virtualbox postman docker pycharm-community-edition intellij-idea-community-edition --noconfirm >/dev/null 2>&1 
     else
         log_warning "Do you know where the term Script Kiddie comes from?"
         slear
     fi
 }
 
-# Nvidia function to handle nvidia driver installation... WIP
-# vidDriver will handle for now...
-function handle_Nvidia {
-    NVD='NVIDIA'
-    card=$(lspci -vmm | grep VGA -A6)
-    if [[ $card == *"$NVD"* ]]; then
-        print_info "Nvidia graphics detected. Applying configuration..."
-        # Add Nvidia-specific configurations here
-        # This will replace vidDriver() NVD case
-    fi
-}
 
 function vid_Driver {
     echo "----------------------------------"
     print_info "Gathering Graphics info..."
     sleep 2
     str=$(lspci -vmm | grep VGA -A6)
+    user=$(getent passwd | awk -F: '$6 ~ /^\/home/ {print $1}')
     
     # Define driver packages
     AMD='AMD'
     NVD='NVIDIA'
     Turing='nvidia-open'
     Maxwell='nvidia'
-    Kepler='nvidia-470xx-dkms'
-    Fermi='nvidia-390xx-dkms'
-    Tesla='nvidia-340xx-dkms'
+    Kepler='nvidia-470xx-utils'
+    Fermi='nvidia-390xx-utils'
+    Tesla='nvidia-340xx-utils'
     
     case $str in
         *"$AMD"*)
@@ -178,18 +168,20 @@ function vid_Driver {
                 # Install for Turing and Maxwell
                 pacman -S "$driver" nvidia-settings nvidia-utils glxinfo nvtop --noconfirm >/dev/null
             else
+                pacman -S nvidia-settings glxinfo nvtop --noconfirm >/dev/null
                 git clone "https://aur.archlinux.org/$driver.git" /tmp/$driver
                 cd /tmp/$driver
+                su $user
                 makepkg -si --noconfirm
                 cd -
                 #rm -rf /tmp/$driver
             fi
 
-            curl -O $GITHUB/main/conf/nvidia.hook 2>/dev/null
-            curl -O $GITHUB/main/conf/20-nvidia.conf 2>/dev/null
+            curl -O $GITHUB/Main/conf/nvidia.hook 2>/dev/null
+            curl -O $GITHUB/Main/conf/20-nvidia.conf 2>/dev/null
             mkdir -p /etc/pacman.d/hooks/ /etc/X11/xorg.conf.d/
-            mv nvidia.hook /etc/pacman.d/hooks/
-            mv 20-nvidia.conf /etc/X11/xorg.conf.d/
+            mv /nvidia.hook /etc/pacman.d/hooks/
+            mv /20-nvidia.conf /etc/X11/xorg.conf.d/
             echo "blacklist nouveau" > /etc/modprobe.d/blacklist-nvidia-nouveau.conf
             echo "-------------------------------------------------------------"
             print_info "Attempting to force composition..."

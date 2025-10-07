@@ -1,4 +1,4 @@
-# hArch {Hackers Arch} 
+# hArch {Hackers Arch} - DISCONTINUED - SEE https://github.com/Hacker-Imperium/hArch
 Version 1.0.3 
 __________________________________________________________________________________________________________________________________________________________________
 
